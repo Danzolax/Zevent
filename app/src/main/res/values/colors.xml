@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="main_text_color">#656565</color>
+    <color name="header_text_color">#000000</color>
+    <color name="header2_text_color">#2F2F2F</color>
+    <color name="event_item_text_color">#464646</color>
+    <color name="main_white_color">#FFFFFF</color>
+    <color name="card_color">#FBFBFB</color>
+    <color name="login_textviews_background">#F3F3F3</color>
+    <color name="bottom_nav_btn_active">#30CAD6</color>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid
+        android:color="@color/login_textviews_background"
+        android:paddingLeft="6dp"
+        android:paddingTop="6dp" />
+    <padding
+        android:bottom="6dp"
+        android:left="28dp"
+        android:right="6dp"
+        android:top="6dp" />
+    <corners
+        android:topLeftRadius="@dimen/corner_radius"
+        android:topRightRadius="@dimen/corner_radius"
+        android:bottomRightRadius="@dimen/corner_radius"
+        android:bottomLeftRadius="@dimen/corner_radius"/>
+</shape>

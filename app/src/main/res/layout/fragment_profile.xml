@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main_white_color">
+
+    <ImageButton
+        android:id="@+id/settings_btn"
+        android:background="@android:color/transparent"
+        android:layout_width="@dimen/ic_size"
+        android:layout_height="@dimen/ic_size"
+        android:src="@drawable/ic_settings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/edit_profile_btn"
+        android:background="@android:color/transparent"
+        android:layout_width="@dimen/ic_size"
+        android:layout_height="@dimen/ic_size"
+        android:src="@drawable/ic_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/profileAvatarContainer"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:cardCornerRadius="80dp"
+        android:shape="ring"
+        android:layout_marginTop="16dp">
+        <ImageView
+            android:id="@+id/profileAvatar"
+            android:layout_height="160dp"
+            android:layout_width="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/empty_profile_photo"
+            >
+        </ImageView>
+    </androidx.cardview.widget.CardView>
+
+
+    
+    <androidx.cardview.widget.CardView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/profileAvatarContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="32dp"
+        app:cardBackgroundColor="@color/main_white_color"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+
+                android:layout_margin="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Даниил  😀"
+                    android:textColor="@color/main_text_color"
+                    android:fontFamily="@font/oxygen"
+                    android:textSize="34sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="20 лет  🎂"
+                    android:textColor="@color/main_text_color"
+                    android:fontFamily="@font/oxygen"
+                    android:textSize="22sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Интересы  ♥"
+                    android:textColor="@color/main_text_color"
+                    android:fontFamily="@font/oxygen"
+                    android:textSize="24sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Футбол, волейбол , баскетбол"
+                    android:textColor="@color/main_text_color"
+                    android:fontFamily="@font/oxygen"
+                    android:textSize="15sp"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="О себе"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:textColor="@color/main_text_color"
+                    android:fontFamily="@font/oxygen"
+                    android:textSize="24sp"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Люблю жать штангу и чизбургер"
+                    android:textColor="@color/main_text_color"
+                    android:fontFamily="@font/oxygen"
+                    android:textSize="15sp"
+                    />
+
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

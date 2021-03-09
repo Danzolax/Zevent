@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "216364958050",
+    "project_id": "zevent-d852e",
+    "storage_bucket": "zevent-d852e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216364958050:android:7500370d98f86573222c3b",
+        "android_client_info": {
+          "package_name": "com.zolax.zevent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216364958050-4h6dvc58kne34dui5g94bvo85k7gs9vm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYR-lciDOgLLAf_sNDWw5sa-4jE7J9HLM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216364958050-4h6dvc58kne34dui5g94bvo85k7gs9vm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
