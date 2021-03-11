@@ -15,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/eventsFragment"
-        android:name="com.zolax.zevent.ui.fragments.EventsFragment"
+        android:name="com.zolax.zevent.ui.fragments.MainEventsFragment"
         android:label="EventsFragment" />
     <fragment
         android:id="@+id/mapFragment"

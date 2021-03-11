@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="@id/guideline"
+            app:layout_constraintEnd_toEndOf="parent"
             android:text="Футбольчик с золахом"
             android:textColor="@color/header2_text_color"
             android:fontFamily="@font/oxygen"
@@ -65,27 +65,15 @@
         <ImageButton
             android:id="@+id/mapButton"
             android:background="@drawable/event_map_btn_background"
-            android:src="@drawable/ic_map_36"
+            android:src="@drawable/ic_map_48"
             android:elevation="8dp"
             android:layout_width="86dp"
-            android:layout_height="36dp"
+            android:layout_height="64dp"
             app:layout_constraintStart_toStartOf="@+id/guideline"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/subscribeButton"
+            app:layout_constraintBottom_toBottomOf="parent"
             />
-
-        <ImageButton
-            android:id="@+id/subscribeButton"
-            android:layout_width="86dp"
-            android:layout_height="53dp"
-            android:src="@drawable/ic_event_subscribe_btn"
-            android:background="@drawable/event_subscribe_btn_background"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/guideline"
-            app:layout_constraintTop_toBottomOf="@id/mapButton"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"
