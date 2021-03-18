@@ -1,5 +1,11 @@
 package com.zolax.zevent
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.zolax.zevent.models.User
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +18,16 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        val auth = FirebaseAuth.getInstance()
+        val users = Firebase.firestore.collection("users")
+        runBlocking {
+
+            users
+                .document(auth.uid!!)
+                .get()
+                .await()
+                .toObject(User::class.java)
+        }
+
     }
 }

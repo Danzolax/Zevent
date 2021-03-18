@@ -8,6 +8,8 @@
     android:layout_height="match_parent"
     android:background="@color/main_white_color">
 
+
+
     <ImageButton
         android:id="@+id/accept_btn"
         android:background="@android:color/transparent"
@@ -69,6 +71,16 @@
 
                 android:layout_margin="16dp">
                 <EditText
+                    android:id="@+id/telephoneNumber"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:hint="Введите номер телефона"
+                    android:textColor="@color/main_text_color"
+                    android:fontFamily="@font/oxygen"
+                    android:textSize="24sp"
+                    android:inputType="textPersonName"/>
+                <EditText
+                    android:id="@+id/name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="Введите имя"
@@ -77,6 +89,7 @@
                     android:textSize="34sp"
                     android:inputType="textPersonName"/>
                 <EditText
+                    android:id="@+id/age"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -86,6 +99,7 @@
                     android:textSize="22sp"
                     android:inputType="number"/>
                 <EditText
+                    android:id="@+id/prefers"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="Введите виды спорта, в которые играете"
@@ -95,6 +109,7 @@
                     android:inputType="textMultiLine"
                     />
                 <EditText
+                    android:id="@+id/aboutYourSelf"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="Расскажите о себе"
@@ -107,5 +122,20 @@
 
             </LinearLayout>
         </ScrollView>
+
+
     </androidx.cardview.widget.CardView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:visibility="invisible"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

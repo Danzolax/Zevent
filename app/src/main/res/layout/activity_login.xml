@@ -17,21 +17,21 @@
         android:text="@string/caps_app_name"
         android:textColor="@color/header_text_color"
         android:textSize="@dimen/login_header"
-        app:layout_constraintBottom_toTopOf="@+id/loginTelephone"
+        app:layout_constraintBottom_toTopOf="@+id/loginEmail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginBottom="128dp"/>
 
     <EditText
-        android:id="@+id/loginTelephone"
+        android:id="@+id/loginEmail"
         android:layout_width="300dp"
         android:layout_height="60dp"
         android:autofillHints="@string/login"
         android:background="@drawable/login_edit_text_background"
         android:fontFamily="@font/oxygen"
         android:layout_marginBottom="16dp"
-        android:hint="Телефон"
-        android:inputType="number"
+        android:hint="E-mail"
+        android:inputType="textEmailAddress"
         android:textColor="@color/main_text_color"
         android:textSize="@dimen/login_hint"
         app:layout_constraintBottom_toTopOf="@+id/loginPassword"
@@ -55,7 +55,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/enterAccountButton"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="32dp"
         android:layout_width="200dp"
         android:layout_height="60dp"
         android:background="@drawable/login_enter_button_background"
