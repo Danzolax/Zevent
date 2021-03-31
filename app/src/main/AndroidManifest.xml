@@ -21,14 +21,18 @@
         </activity>
         <activity
             android:name=".ui.activities.MainActivity"
-            android:label="@string/title_activity_main">
-        </activity>
+            android:label="@string/title_activity_main"></activity>
         <activity android:name=".ui.activities.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDCvP07ssvmpkykrJ3QN5_BzGifwa4Weqo" />
+
     </application>
 
 </manifest>
