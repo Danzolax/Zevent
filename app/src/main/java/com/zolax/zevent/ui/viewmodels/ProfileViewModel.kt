@@ -1,5 +1,7 @@
 package com.zolax.zevent.ui.viewmodels
 
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,6 +16,8 @@ class ProfileViewModel @ViewModelInject constructor(private val firebaseReposito
     ViewModel() {
     val profileData = MutableLiveData<Resource<User>>()
     val isEditProfile = MutableLiveData<Resource<Unit>>()
+    val isSuccessUploadImage = MutableLiveData<Resource<Unit>>()
+    val profileImage = MutableLiveData<Resource<Uri>>()
 
     fun getCurrentUser() = viewModelScope.launch {
         profileData.postValue(firebaseRepository.getCurrentUser())
@@ -32,6 +36,16 @@ class ProfileViewModel @ViewModelInject constructor(private val firebaseReposito
         isEditProfile.postValue(Resource.Loading())
         val response = firebaseRepository.updateUser(name,telephoneNumber,age,prefers,aboutMe)
         isEditProfile.postValue(response)
+    }
+
+    fun updateImageOfCurrentUser(uri: Uri) = viewModelScope.launch {
+        val response = firebaseRepository.updateImageOfCurrentUser(uri)
+        isSuccessUploadImage.postValue(response)
+
+    }
+    fun downloadCurrentUserImage() = viewModelScope.launch {
+        val response = firebaseRepository.downloadCurrentUserImage()
+        profileImage.postValue(response)
     }
 
 }

@@ -1,15 +1,23 @@
 package com.zolax.zevent.ui.fragments
 
+import android.R.attr
+import android.app.Activity.RESULT_OK
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.zolax.zevent.R
 import com.zolax.zevent.ui.viewmodels.ProfileViewModel
+import com.zolax.zevent.util.Constants.PICK_IMAGE_REQUEST
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_edit_profile.*
@@ -21,10 +29,12 @@ import kotlinx.android.synthetic.main.fragment_edit_profile.profileAvatar
 import kotlinx.android.synthetic.main.fragment_edit_profile.telephoneNumber
 import kotlinx.android.synthetic.main.fragment_profile.*
 
+
 @AndroidEntryPoint
 class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
-    val profileViewModel: ProfileViewModel by viewModels()
+    val profileViewModel: ProfileViewModel by activityViewModels()
+    var filePath: Uri? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -38,7 +48,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     }
 
     private fun subscribeObservers() {
-        profileViewModel.isEditProfile.observe(viewLifecycleOwner, Observer { result ->
+        profileViewModel.isEditProfile.observe(viewLifecycleOwner, { result ->
             when (result) {
                 is Resource.Error -> {
                     progressBar.isVisible = false
@@ -51,26 +61,37 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
                 is Resource.Success -> {
                     progressBar.isVisible = false
                     findNavController().popBackStack()
-
                 }
                 is Resource.Loading ->
                     progressBar.isVisible = true
             }
         })
         profileViewModel.profileData.observe(viewLifecycleOwner, { result ->
-            when(result){
-                is Resource.Success ->{
+            when (result) {
+                is Resource.Success -> {
                     telephoneNumber.setText(result.data?.telephoneNumber ?: "Пусто")
                     name.setText(result.data?.name ?: "Пусто")
                     age.setText(result.data?.age ?: "Пусто")
                     prefers.setText(result.data?.prefers ?: "Пусто")
                     aboutYourSelf.setText(result.data?.aboutMe ?: "Пусто")
                 }
-                is Resource.Error ->{
-                    Toast.makeText(requireContext(),"Ошибка загрузки профиля", Toast.LENGTH_SHORT).show()
+                is Resource.Error -> {
+                    Toast.makeText(requireContext(), "Ошибка загрузки профиля", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         })
+        profileViewModel.isSuccessUploadImage.observe(viewLifecycleOwner,{result->
+            when(result){
+                is Resource.Success ->{
+                    Toast.makeText(context,"Фотка робит", Toast.LENGTH_SHORT).show()
+                }
+                is Resource.Error ->{
+                    Toast.makeText(context,"Фотка не робит", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+
     }
 
     private fun initButtons() {
@@ -83,12 +104,32 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
                 telephoneNumber.text.toString(),
                 age.text.toString(),
                 prefers.text.toString(),
-                aboutYourSelf.text.toString()
+                aboutYourSelf.text.toString(),
             )
+             if(filePath != null){
+                 profileViewModel.updateImageOfCurrentUser(filePath!!)
+             }
             profileViewModel.getCurrentUser()
+            profileViewModel.downloadCurrentUserImage()
         }
         profileAvatar.setOnClickListener {
-            Toast.makeText(requireContext(), "Аватар изменен", Toast.LENGTH_SHORT).show()
+            val intent = Intent()
+            intent.type = "image/*"
+            intent.action = Intent.ACTION_PICK
+            startActivityForResult(
+                Intent.createChooser(intent, "Выберите изображение"),
+                PICK_IMAGE_REQUEST
+            )
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK) {
+            val imageUri = data?.data ?: return
+            filePath = imageUri
+            profileAvatar.setImageURI(imageUri)
+            profileAvatar.scaleType = ImageView.ScaleType.FIT_XY
         }
     }
 }

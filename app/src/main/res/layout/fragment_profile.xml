@@ -73,7 +73,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/oxygen"
-                    android:text="89046318589"
+                    android:text=""
                     android:textColor="@color/main_text_color"
                     android:textSize="24sp" />
 
@@ -82,7 +82,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/oxygen"
-                    android:text="Даниил  😀"
+                    android:text=""
                     android:textColor="@color/main_text_color"
                     android:textSize="34sp" />
 
@@ -92,7 +92,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:fontFamily="@font/oxygen"
-                    android:text="20 лет  🎂"
+                    android:text=""
                     android:textColor="@color/main_text_color"
                     android:textSize="22sp" />
 
@@ -102,7 +102,7 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="8dp"
                     android:fontFamily="@font/oxygen"
-                    android:text="Интересы  ♥"
+                    android:text="Интересы"
                     android:textColor="@color/main_text_color"
                     android:textSize="24sp" />
 
@@ -111,7 +111,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/oxygen"
-                    android:text="Футбол, волейбол , баскетбол"
+                    android:text=""
                     android:textColor="@color/main_text_color"
                     android:textSize="15sp" />
 
@@ -130,7 +130,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/oxygen"
-                    android:text="Люблю жать штангу и чизбургер"
+                    android:text=""
                     android:textColor="@color/main_text_color"
                     android:textSize="15sp" />
 

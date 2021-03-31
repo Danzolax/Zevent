@@ -14,6 +14,7 @@ data class User(
     var age: String? = null,
     var prefers: String? = null,
     var aboutMe: String? = null,
+    var imageURI: String? = null,
 
 
 ) : Parcelable {
@@ -24,11 +25,9 @@ data class User(
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
+        parcel.readString(),
         parcel.readString()
-    ){
-        var latitude = parcel.readDouble()
-        var longitude = parcel.readDouble()
-    }
+    )
 
     override fun describeContents(): Int {
         return 0
@@ -44,6 +43,7 @@ data class User(
             it.writeString(age)
             it.writeString(prefers)
             it.writeString(aboutMe)
+            it.writeString(imageURI)
         }
     }
 
