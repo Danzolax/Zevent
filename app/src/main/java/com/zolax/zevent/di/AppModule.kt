@@ -3,6 +3,7 @@ package com.zolax.zevent.di
 import android.content.Context
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.zolax.zevent.repositories.FirebaseRepository
 import dagger.Module
 import dagger.Provides
@@ -27,5 +28,5 @@ object AppModule {
     @Provides
     fun provideFusedLocationProviderClient(
         @ApplicationContext app: Context
-    ) = FusedLocationProviderClient(app)
+    ): FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(app)
 }
