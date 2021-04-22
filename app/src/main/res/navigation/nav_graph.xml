@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_mapFragment_to_addEventFragment"
             app:destination="@id/addEventFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_subscribeOnEventFragment"
+            app:destination="@id/subscribeOnEventFragment" />
     </fragment>
     <fragment
         android:id="@+id/profileFragment"
@@ -56,4 +59,12 @@
         android:id="@+id/simpleMapViewerFragment"
         android:name="com.zolax.zevent.ui.fragments.SimpleMapViewerFragment"
         android:label="SimpleMapViewerFragment" />
+    <fragment
+        android:id="@+id/subscribeOnEventFragment"
+        android:name="com.zolax.zevent.ui.fragments.SubscribeOnEventFragment"
+        android:label="SubscribeOnEventFragment" >
+        <action
+            android:id="@+id/action_subscribeOnEventFragment_to_simpleMapViewerFragment"
+            app:destination="@id/simpleMapViewerFragment" />
+    </fragment>
 </navigation>

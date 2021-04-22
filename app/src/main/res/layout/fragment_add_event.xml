@@ -32,14 +32,14 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_margin="16dp"
                 android:orientation="vertical">
 
                 <EditText
                     android:id="@+id/title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:fontFamily="@font/oxygen"
                     android:hint="Введите название мероприятия"
                     android:textColor="@color/main_text_color"
@@ -57,7 +57,7 @@
                         android:fontFamily="@font/oxygen"
                         android:text="Выберите категорию:"
                         android:textColor="@color/main_text_color"
-                        android:textSize="18dp" />
+                        android:textSize="18sp" />
 
                     <Spinner
                         android:id="@+id/types"
@@ -66,7 +66,8 @@
                         android:entries="@array/sportTypes"
                         android:fontFamily="@font/oxygen"
                         android:textColor="@color/main_text_color"
-                        android:textSize="22sp" />
+                        android:textSize="22sp"
+                        android:gravity="end"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -81,7 +82,7 @@
                         android:fontFamily="@font/oxygen"
                         android:text="Введите количество игроков:"
                         android:textColor="@color/main_text_color"
-                        android:textSize="18dp" />
+                        android:textSize="18sp" />
 
                     <EditText
                         android:id="@+id/players_count"

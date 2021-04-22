@@ -20,4 +20,10 @@
         android:title="edit"
         android:visible="false"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_subscribe"
+        android:icon="@drawable/ic_subscribe"
+        android:title="subscribe"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
 </menu>

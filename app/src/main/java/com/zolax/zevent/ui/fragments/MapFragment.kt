@@ -27,6 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
 import com.zolax.zevent.R
 import com.zolax.zevent.models.Event
 import com.zolax.zevent.ui.viewmodels.MapViewModel
@@ -98,6 +99,10 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         Timber.d("marker clicked!")
         p0?.let {
             if (it.tag is Event){
+                val bundle = Bundle()
+                val gson = Gson()
+                bundle.putString("event",gson.toJson(it.tag))
+                findNavController().navigate(R.id.action_mapFragment_to_subscribeOnEventFragment, bundle)
                 return true
             }
         }
