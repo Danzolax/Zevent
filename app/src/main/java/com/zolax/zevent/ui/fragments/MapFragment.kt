@@ -12,9 +12,15 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -30,7 +36,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionCallbacks{
+class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionCallbacks, GoogleMap.OnMapClickListener{
 
     private var map: GoogleMap? = null
 
@@ -42,8 +48,32 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         super.onViewCreated(view, savedInstanceState)
         requestPermission()
         launchMap(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        (requireActivity() as AppCompatActivity).supportActionBar?.let {
+            it.title = "Карта"
+            it.setHomeButtonEnabled(false)
+            it.setDisplayHomeAsUpEnabled(false)
+
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.appbar_menu, menu)
+    }
 
 
+    override fun onMapClick(p0: LatLng?) {
+        if (p0 != null){
+            val bundle = Bundle()
+            bundle.putDouble("latitude", p0.latitude)
+            bundle.putDouble("longitude", p0.longitude)
+            findNavController().navigate(R.id.action_mapFragment_to_addEventFragment, bundle)
+        } else{
+            Snackbar.make(requireView(),"Выберите другую локацию!",Snackbar.LENGTH_SHORT).show()
+        }
     }
 
 
@@ -54,6 +84,8 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         mapUISettings()
         initButtons()
         mapView?.getMapAsync { googleMap ->
+            googleMap.uiSettings.isMyLocationButtonEnabled = false
+            googleMap.setOnMapClickListener(this)
             map = googleMap
             if (ActivityCompat.checkSelfPermission(
                     requireContext(),
@@ -93,6 +125,13 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
 
     }
 
+    private fun mapUISettings() {
+        map?.uiSettings?.isCompassEnabled = false
+        map?.uiSettings?.isMyLocationButtonEnabled = false
+    }
+
+
+
     private fun buildAlertMessageNoLocationService() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         builder.setCancelable(false)
@@ -104,10 +143,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     }
 
 
-    private fun mapUISettings() {
-        map?.uiSettings?.isCompassEnabled = false
-        map?.uiSettings?.isMyLocationButtonEnabled = false
-    }
+
 
 
     private fun requestPermission() {
@@ -178,6 +214,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         super.onSaveInstanceState(outState)
         mapView?.onSaveInstanceState(outState)
     }
+
 
 
 

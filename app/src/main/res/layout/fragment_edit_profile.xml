@@ -10,23 +10,7 @@
 
 
 
-    <ImageButton
-        android:id="@+id/accept_btn"
-        android:background="@android:color/transparent"
-        android:layout_width="@dimen/ic_size"
-        android:layout_height="@dimen/ic_size"
-        android:src="@drawable/ic_edit_profile_done"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
-        android:id="@+id/back_btn"
-        android:background="@android:color/transparent"
-        android:layout_width="@dimen/ic_size"
-        android:layout_height="@dimen/ic_size"
-        android:src="@drawable/ic_back"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/profileAvatarContainer"

@@ -16,5 +16,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         bottomNavigationView.setupWithNavController(navHostFragment.findNavController())
+
     }
 }

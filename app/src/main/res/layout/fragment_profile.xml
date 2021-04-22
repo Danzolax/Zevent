@@ -7,24 +7,6 @@
     android:layout_height="match_parent"
     android:background="@color/main_white_color">
 
-    <ImageButton
-        android:id="@+id/settings_btn"
-        android:layout_width="@dimen/ic_size"
-        android:layout_height="@dimen/ic_size"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_settings"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/edit_profile_btn"
-        android:layout_width="@dimen/ic_size"
-        android:layout_height="@dimen/ic_size"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_edit"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <androidx.cardview.widget.CardView
         android:id="@+id/profileAvatarContainer"
         android:layout_width="160dp"

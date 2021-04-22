@@ -20,7 +20,11 @@
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.zolax.zevent.ui.fragments.MapFragment"
-        android:label="MapFragment" />
+        android:label="MapFragment" >
+        <action
+            android:id="@+id/action_mapFragment_to_addEventFragment"
+            app:destination="@id/addEventFragment" />
+    </fragment>
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.zolax.zevent.ui.fragments.ProfileFragment"
@@ -40,4 +44,16 @@
             android:id="@+id/action_editProfileFragment_to_profileFragment"
             app:destination="@id/profileFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/addEventFragment"
+        android:name="com.zolax.zevent.ui.fragments.AddEventFragment"
+        android:label="AddEventFragment" >
+        <action
+            android:id="@+id/action_addEventFragment_to_simpleMapViewerFragment"
+            app:destination="@id/simpleMapViewerFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/simpleMapViewerFragment"
+        android:name="com.zolax.zevent.ui.fragments.SimpleMapViewerFragment"
+        android:label="SimpleMapViewerFragment" />
 </navigation>

@@ -24,6 +24,7 @@ class FirebaseRepository {
     private val storage = FirebaseStorage.getInstance()
     private val storageRef = storage.reference
     private val users = Firebase.firestore.collection("users")
+    private val events = Firebase.firestore.collection("events")
 
     private inline fun <T> safeCall(action: () -> Resource<T>): Resource<T> { //TODO как работает
         return try {

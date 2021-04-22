@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="sportTypes">
+        <item>Футбол</item>
+        <item>Баскетбол</item>
+        <item>Волейбол</item>
+        <item>Другое</item>
+    </string-array>
+    <string-array name="footballRoleTypes">
+        <item>Рекомендуемое</item>
+        <item>Нападающий</item>
+        <item>Полузащитник</item>
+        <item>Защитник</item>
+        <item>Вратарь</item>
+    </string-array>
+
+    <string-array name="basketballRoleTypes">
+        <item>Рекомендуемое</item>
+        <item>Защитник</item>
+        <item>Нападающий</item>
+    </string-array>
+
+    <string-array name="volleyballRoleTypes">
+        <item>Рекомендуемое</item>
+        <item>Либеро</item>
+        <item>Диагональный</item>
+        <item>Доигровщик</item>
+        <item>Центральный блокирующий</item>
+        <item>Связующий</item>
+        <item>Подающий</item>
+    </string-array>
+
+    <string-array name="rankTypes">
+        <item>Новичок</item>
+        <item>Любитель</item>
+        <item>Профи</item>
+    </string-array>
+</resources>

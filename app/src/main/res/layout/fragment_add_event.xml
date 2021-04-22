@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/main_white_color">
+
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/main_card_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        app:cardBackgroundColor="@color/main_white_color"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:orientation="vertical">
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/oxygen"
+                    android:hint="Введите название мероприятия"
+                    android:textColor="@color/main_text_color"
+                    android:textSize="22sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:fontFamily="@font/oxygen"
+                        android:text="Выберите категорию:"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="18dp" />
+
+                    <Spinner
+                        android:id="@+id/types"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:entries="@array/sportTypes"
+                        android:fontFamily="@font/oxygen"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:fontFamily="@font/oxygen"
+                        android:text="Введите количество игроков:"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="18dp" />
+
+                    <EditText
+                        android:id="@+id/players_count"
+                        android:layout_width="32dp"
+                        android:layout_height="wrap_content"
+                        android:entries="@array/sportTypes"
+                        android:fontFamily="@font/oxygen"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:fontFamily="@font/oxygen"
+                    android:text="Выберите дату и время"
+                    android:textColor="@color/main_text_color"
+                    android:textSize="18dp" />
+
+                <TextView
+                    android:id="@+id/current_datetime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/oxygen"
+                    android:textColor="@color/main_text_color"
+                    android:textSize="18dp"
+                    android:textStyle="bold"
+                    tools:text="15.02.2021 13:00" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:fontFamily="@font/oxygen"
+                        android:text="Cпортинвентарь"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="18dp" />
+
+                    <CheckBox
+                        android:id="@+id/is_need_equip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+
+                <EditText
+                    android:id="@+id/equip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/oxygen"
+                    android:inputType="textMultiLine"
+                    android:textColor="@color/main_text_color"
+                    android:textSize="18dp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/role_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="8dp"
+                        android:fontFamily="@font/oxygen"
+                        android:text="Выберите роль:"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="18dp" />
+
+                    <Spinner
+                        android:id="@+id/role"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/oxygen"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="8dp"
+                        android:fontFamily="@font/oxygen"
+                        android:text="Уровень игры:"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="18dp" />
+
+                    <Spinner
+                        android:id="@+id/rank"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:entries="@array/rankTypes"
+                        android:fontFamily="@font/oxygen"
+                        android:textColor="@color/main_text_color"
+                        android:textSize="22sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/map_button"
+                        android:layout_width="86dp"
+                        android:layout_height="54dp"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/event_map_btn_background"
+                        android:elevation="8dp"
+                        android:src="@drawable/ic_map_36" />
+
+                    <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/auto_map_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        android:background="@drawable/event_map_btn_background"
+                        android:elevation="8dp"
+                        android:fontFamily="@font/oxygen"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="АВТОПОДБОР"
+                        android:textColor="@android:color/black" />
+                </LinearLayout>
+
+
+            </LinearLayout>
+        </ScrollView>
+
+    </androidx.cardview.widget.CardView>
+
+
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

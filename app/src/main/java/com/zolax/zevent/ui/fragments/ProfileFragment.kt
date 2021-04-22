@@ -1,15 +1,16 @@
 package com.zolax.zevent.ui.fragments
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.zolax.zevent.R
 import com.zolax.zevent.ui.viewmodels.ProfileViewModel
@@ -27,7 +28,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initButtons()
+        setHasOptionsMenu(true)
         subscribeObservers()
         profileViewModel.getCurrentUser()
         profileViewModel.downloadCurrentUserImage()
@@ -62,12 +63,31 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         })
     }
 
-    private fun initButtons() {
-        settings_btn.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_settingsFragment)
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        (requireActivity() as AppCompatActivity).supportActionBar?.let {
+            it.title = "Профиль"
+            it.setHomeButtonEnabled(false)
+            it.setDisplayHomeAsUpEnabled(false)
         }
-        edit_profile_btn.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
+        menu.findItem(R.id.action_settings).isVisible = true
+        menu.findItem(R.id.action_edit).isVisible = true
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.appbar_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                findNavController().navigate(R.id.action_profileFragment_to_settingsFragment)
+                true
+            }
+            R.id.action_edit -> {
+                findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
