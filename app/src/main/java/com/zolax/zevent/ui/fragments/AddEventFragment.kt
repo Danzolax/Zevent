@@ -1,8 +1,6 @@
 package com.zolax.zevent.ui.fragments
-
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.opengl.Visibility
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.Menu
@@ -14,21 +12,87 @@ import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.zolax.zevent.R
+import com.zolax.zevent.models.Event
+import com.zolax.zevent.models.Player
+import com.zolax.zevent.ui.viewmodels.AddEventViewModel
+import com.zolax.zevent.util.Resource
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_add_event.*
 import timber.log.Timber
 import java.util.*
+import kotlin.collections.ArrayList
 
-
+@AndroidEntryPoint
 class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
+    private val addEventViewModel: AddEventViewModel by viewModels()
+    private val needDatetime = Calendar.getInstance()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setDateTimeInTextView(Calendar.getInstance())
         initButtons()
         setHasOptionsMenu(true)
         initSpinners()
+        subsribeObservers()
+    }
+
+    private fun createEvent(): Event {
+        val event = Event()
+        if (players_count.text.toString() != "" && createPlayer() != null) {
+            event.title = title.text.toString()
+            event.category = types.selectedItem as String
+            event.playersCount = Integer.parseInt(players_count.text.toString())
+            event.eventDateTime = needDatetime.time
+            event.isNeedEquip = is_need_equip.isChecked
+            event.needEquip = equip.text.toString()
+            event.players = arrayListOf(createPlayer()!!)
+            val latitude: Double = requireArguments().getDouble("latitude")
+            val longitude: Double = requireArguments().getDouble("longitude")
+            event.latitude = latitude
+            event.longitude = longitude
+        } else {
+            Snackbar.make(requireView(), "Введите количество игроков!", Snackbar.LENGTH_SHORT)
+                .show()
+
+        }
+
+
+        return event
+    }
+
+    private fun createPlayer(): Player? {
+        return FirebaseAuth.getInstance().currentUser?.uid?.let {
+            Player(
+                it,
+                role.selectedItem as String,
+                rank.selectedItem as String
+            )
+        }
+    }
+
+    private fun subsribeObservers() {
+        addEventViewModel.isSuccessCreateEvent.observe(viewLifecycleOwner, { result ->
+            when (result) {
+                is Resource.Success -> {
+                    Snackbar.make(requireView(), "Мероприятие создано", Snackbar.LENGTH_SHORT)
+                        .show()
+                    findNavController().popBackStack()
+                }
+                is Resource.Error -> {
+                    Snackbar.make(
+                        requireView(),
+                        "Ошибка создания мероприятия!",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        })
     }
 
     private fun initSpinners() {
@@ -40,14 +104,13 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
 
         typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         types.adapter = typesAdapter
-        types.onItemSelectedListener = object : OnItemSelectedListener {
+        types?.onItemSelectedListener = object : OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
-                itemSelected: View, selectedItemPosition: Int, selectedId: Long
+                itemSelected: View?, selectedItemPosition: Int, selectedId: Long
             ) {
-                val choose = resources.getStringArray(R.array.sportTypes)
-                when(choose[selectedItemPosition]){
-                    "Футбол" ->{
+                when (resources.getStringArray(R.array.sportTypes)[selectedItemPosition]) {
+                    "Футбол" -> {
                         val rolesAdapter = ArrayAdapter.createFromResource(
                             requireContext(),
                             R.array.footballRoleTypes,
@@ -56,7 +119,7 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                         rolesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         role.adapter = rolesAdapter
                     }
-                    "Баскетбол" ->{
+                    "Баскетбол" -> {
                         val bAdapter = ArrayAdapter.createFromResource(
                             requireContext(),
                             R.array.basketballRoleTypes,
@@ -65,7 +128,7 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                         bAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         role.adapter = bAdapter
                     }
-                    "Волейбол" ->{
+                    "Волейбол" -> {
                         val vAdapter = ArrayAdapter.createFromResource(
                             requireContext(),
                             R.array.volleyballRoleTypes,
@@ -74,12 +137,11 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                         vAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         role.adapter = vAdapter
                     }
-                    else ->{
+                    else -> {
                         role_container.visibility = View.GONE
                     }
                 }
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
@@ -122,6 +184,8 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
             TimePickerDialog(requireContext(), { _, hour, minute ->
                 val pickedDateTime = Calendar.getInstance()
                 pickedDateTime.set(year, month, day, hour, minute)
+                needDatetime.set(year, month, day, hour, minute)
+
                 setDateTimeInTextView(pickedDateTime)
             }, startHour, startMinute, false).show()
         }, startYear, startMonth, startDay).show()
@@ -157,8 +221,8 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                 true
             }
             R.id.action_confirm -> {
-                Snackbar.make(requireView(), "Сохрвнено", Snackbar.LENGTH_SHORT).show()
-                findNavController().popBackStack()
+                Timber.d(createEvent().toString())
+                addEventViewModel.addEvent(createEvent())
                 true
             }
             else -> {

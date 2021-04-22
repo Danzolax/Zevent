@@ -10,6 +10,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.zolax.zevent.models.Event
 import com.zolax.zevent.models.User
 import com.zolax.zevent.util.Resource
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +35,8 @@ class FirebaseRepository {
             Resource.Error(e)
         }
     }
+
+
 
     suspend fun updateUserLocation(location: Location): Unit = withContext(Dispatchers.IO) {
         val geoPoint = GeoPoint(
@@ -137,6 +140,19 @@ class FirebaseRepository {
             val url = storageRef.child(getCurrentUserId()).downloadUrl.await()
             Resource.Success(url)
         }
+
+    suspend fun addEvent(event:Event) =
+        safeCall {
+            events.add(event).await()
+            Resource.Success<Unit>()
+        }
+
+    suspend fun getAllEvents() = safeCall {
+        Timber.d("load all events...")
+        val events = events.get().await().toObjects(Event::class.java)
+        Timber.d("events: $events")
+        Resource.Success(events)
+    }
 
 
 }
