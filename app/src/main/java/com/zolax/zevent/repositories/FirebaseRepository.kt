@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.GeoPoint
@@ -11,6 +13,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.zolax.zevent.models.Event
+import com.zolax.zevent.models.Player
 import com.zolax.zevent.models.User
 import com.zolax.zevent.util.Resource
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +22,7 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.lang.Exception
 import java.util.*
+import kotlin.collections.ArrayList
 
 class FirebaseRepository {
     private val auth = FirebaseAuth.getInstance()
@@ -115,10 +119,6 @@ class FirebaseRepository {
             Resource.Success<Unit>()
         }
 
-//    suspend fun uploadCurrentUserProfileImage() = safeCall {
-//
-//    }
-
     suspend fun updateImageOfCurrentUser(uri: Uri) = safeCall {
         Timber.d("start fun ")
         Timber.d("start update user image uri:$uri")
@@ -153,6 +153,52 @@ class FirebaseRepository {
         Timber.d("events: $events")
         Resource.Success(events)
     }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    suspend fun getAllEventsByUserId(id: String) = safeCall {
+        val events = events.get().await().toObjects(Event::class.java)
+        Timber.d("load all events by $id")
+        Timber.d("$events")
+        events.removeIf {
+            var flag = false
+            it.players?.forEach { elem ->
+               if ( elem.userId.equals(id)){
+                   flag = true
+                   return@forEach
+               }
+            }
+            return@removeIf !flag
+        }
+        Timber.d("$events")
+        Resource.Success(events)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    suspend fun getAllEventsReverseByUserId(id: String) = safeCall {
+        val events = events.get().await().toObjects(Event::class.java)
+        Timber.d("load all events by $id")
+        Timber.d("$events")
+        events.removeIf {
+            var flag = false
+            it.players?.forEach { elem ->
+                if ( elem.userId.equals(id)){
+                    flag = true
+                    return@forEach
+                }
+            }
+            return@removeIf flag
+        }
+        Timber.d("$events")
+        Resource.Success(events)
+    }
+
+    suspend fun  subscribeEventById(id: String, player: Player) = safeCall {
+        val event = events.document(id).get().await().toObject(Event::class.java)
+        (event?.players as ArrayList).add(player)
+        events.document(id).set(event).await()
+        Resource.Success<Unit>()
+    }
+
 
 
 }

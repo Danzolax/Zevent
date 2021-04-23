@@ -9,15 +9,13 @@ import com.zolax.zevent.repositories.FirebaseRepository
 import com.zolax.zevent.util.Resource
 import kotlinx.coroutines.launch
 
-class AddEventViewModel @ViewModelInject constructor(
+class AllEventsViewModel @ViewModelInject constructor(
     val firebaseRepository: FirebaseRepository
 ) : ViewModel() {
-    val isSuccessCreateEvent = MutableLiveData<Resource<Unit>>()
+    val eventsData = MutableLiveData<Resource<List<Event>>>()
 
-    fun addEvent(event: Event) = viewModelScope.launch {
-        val response = firebaseRepository.addEvent(event)
-        isSuccessCreateEvent.postValue(response)
+    fun getAllEvents() = viewModelScope.launch {
+        val response = firebaseRepository.getAllEvents()
+        eventsData.postValue(response)
     }
-
-
 }

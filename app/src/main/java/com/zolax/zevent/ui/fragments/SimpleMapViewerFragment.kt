@@ -19,7 +19,7 @@ import com.zolax.zevent.util.Constants.MAP_CAMERA_ZOOM
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_edit_profile.*
 import kotlinx.android.synthetic.main.fragment_map.*
-
+import timber.log.Timber
 
 
 @AndroidEntryPoint

@@ -9,29 +9,45 @@ import android.view.View
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.zolax.zevent.R
 import com.zolax.zevent.models.Event
+import com.zolax.zevent.models.Player
+import com.zolax.zevent.ui.viewmodels.SubscribeOnEventViewModel
+import com.zolax.zevent.util.Resource
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_subscribe_on_event.*
-import kotlinx.android.synthetic.main.fragment_subscribe_on_event.current_datetime
-import kotlinx.android.synthetic.main.fragment_subscribe_on_event.map_button
-import kotlinx.android.synthetic.main.fragment_subscribe_on_event.players_count
-import kotlinx.android.synthetic.main.fragment_subscribe_on_event.role
-import kotlinx.android.synthetic.main.fragment_subscribe_on_event.role_container
-import kotlinx.android.synthetic.main.fragment_subscribe_on_event.title
 import java.util.*
 
-
+@AndroidEntryPoint
 class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event) {
     lateinit var event: Event
+    val subscribeOnEventViewModel : SubscribeOnEventViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         initSpinners()
         initUI()
         initButtons()
+        subscribeObservers()
+    }
+
+    private fun subscribeObservers() {
+        subscribeOnEventViewModel.event.observe(viewLifecycleOwner,{result ->
+            when(result){
+                is Resource.Success ->{
+                    Snackbar.make(requireView(), "Вы подписаны на мероприятие", Snackbar.LENGTH_SHORT).show()
+                    findNavController().popBackStack()
+                }
+                is Resource.Error ->{
+                    Snackbar.make(requireView(), "Ошибка подписки!", Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        })
     }
 
     private fun initButtons() {
@@ -125,7 +141,7 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_subscribe -> {
-                Snackbar.make(requireView(), "Подписан!", Snackbar.LENGTH_SHORT).show()
+                subscribeOnEventViewModel.subscribeEventById(event.id!!,createPlayer()!!)
                 true
             }
             android.R.id.home -> {
@@ -133,6 +149,16 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun createPlayer(): Player? {
+        return FirebaseAuth.getInstance().currentUser?.uid?.let {
+            Player(
+                it,
+                role.selectedItem as String,
+                rank.selectedItem as String
+            )
         }
     }
 }
