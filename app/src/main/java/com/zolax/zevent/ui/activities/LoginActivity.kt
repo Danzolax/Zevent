@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 
 import com.zolax.zevent.R
@@ -26,7 +25,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (authorisationViewModel.isAuthentificated()){
+        if (authorisationViewModel.isAuthenticated()){
             startActivity(Intent(this,MainActivity::class.java))
             finish()
         }

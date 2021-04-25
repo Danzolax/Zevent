@@ -19,7 +19,7 @@ class AuthorisationViewModel @ViewModelInject constructor(
     val noMutableSignInData : LiveData<Resource<Boolean>> = signInData
     val noMutableSignUpData : LiveData<Resource<Unit>> = signUpData
 
-    fun isAuthentificated() = firebaseRepository.isAuthenticated()
+    fun isAuthenticated() = firebaseRepository.isAuthenticated()
 
     fun signIn(email: String, password:String) = viewModelScope.launch {
         signInData.value?.let {
@@ -49,23 +49,33 @@ class AuthorisationViewModel @ViewModelInject constructor(
         signUpData.postValue(Resource.Loading())
         for (field in listOf(name,telephoneNumber,email,age,prefers,aboutMe)){
             if (field.isEmpty()){
-                signUpData.value = Resource.Error(msg = "Заполните все поля!!!")
+                signUpData.postValue(Resource.Error(msg = "Заполните все поля!!!"))
                 return@launch
             }
         }
+        if(name.length > 15){
+            signUpData.postValue(Resource.Error(msg = "Слишком длинное имя!"))
+            return@launch
+        }
 
-        var user = User().apply {
+        val user = User().apply {
             this.email = email
             this.aboutMe = aboutMe
             try {
-                val intAge: Int = age.toInt()
+                age.toInt()
             } catch (error: NumberFormatException){
-                signUpData.value = Resource.Error(msg = "Некорректный возраст")
+                signUpData.postValue(Resource.Error(msg = "Некорректный возраст"))
                 return@launch
             }
             this.age = age
             this.name = name
             this.prefers = prefers
+            try {
+                telephoneNumber.toInt()
+            }catch (error: NumberFormatException){
+                signUpData.postValue(Resource.Error(msg = "Некорректный номер телефона"))
+                return@launch
+            }
             this.telephoneNumber = telephoneNumber
         }
         val response = firebaseRepository.signUpWithEmail(user, password)

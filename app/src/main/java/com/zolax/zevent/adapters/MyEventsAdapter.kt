@@ -12,6 +12,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import com.zolax.zevent.R
 import com.zolax.zevent.models.Event
 import kotlinx.android.synthetic.main.events_my_item.view.*
@@ -40,7 +41,7 @@ class MyEventsAdapter : RecyclerView.Adapter<MyEventsAdapter.AllEventsViewHolder
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AllEventsViewHolder {
         return AllEventsViewHolder(
             LayoutInflater.from(parent.context).inflate(
-                R.layout.events_item,
+                R.layout.events_my_item,
                 parent,
                 false
             )
@@ -63,6 +64,13 @@ class MyEventsAdapter : RecyclerView.Adapter<MyEventsAdapter.AllEventsViewHolder
                 bundle.putDouble("longitude", event.longitude!!)
                 findNavController().navigate(R.id.action_eventsFragment_to_simpleMapViewerFragment, bundle)
             }
+            moreButton.setOnClickListener {
+                val bundle = Bundle()
+                val gson = Gson()
+                bundle.putString("event", gson.toJson(event))
+                findNavController().navigate(R.id.action_eventsFragment_to_myEventMoreFragment, bundle)
+            }
+
         }
     }
 
@@ -78,6 +86,7 @@ class MyEventsAdapter : RecyclerView.Adapter<MyEventsAdapter.AllEventsViewHolder
         )
 
     }
+
 
     override fun getItemCount() = events.size
 }

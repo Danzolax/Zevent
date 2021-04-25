@@ -30,8 +30,8 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-        initSpinners()
         initUI()
+        initSpinners()
         initButtons()
         subscribeObservers()
     }
@@ -89,7 +89,7 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
     }
 
     private fun initSpinners() {
-        when (type.text.toString()) {
+        when (event.category) {
             "Футбол" -> {
                 val rolesAdapter = ArrayAdapter.createFromResource(
                     requireContext(),
@@ -154,11 +154,19 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
 
     private fun createPlayer(): Player? {
         return FirebaseAuth.getInstance().currentUser?.uid?.let {
-            Player(
-                it,
-                role.selectedItem as String,
-                rank.selectedItem as String
-            )
+            if (event.category.equals("Другое")){
+                Player(
+                    it,
+                    "Нет",
+                    rank.selectedItem as String
+                )
+            } else{
+                Player(
+                    it,
+                    role.selectedItem as String,
+                    rank.selectedItem as String
+                )
+            }
         }
     }
 }

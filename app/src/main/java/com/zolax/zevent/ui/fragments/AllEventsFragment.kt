@@ -1,12 +1,15 @@
 package com.zolax.zevent.ui.fragments
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 
 import com.zolax.zevent.R
 import com.zolax.zevent.adapters.AllEventsAdapter
@@ -21,11 +24,12 @@ import timber.log.Timber
 class AllEventsFragment : Fragment(R.layout.fragment_all_events) {
     private val allEventsViewModel: AllEventsViewModel by viewModels()
     private lateinit var allEventsAdapter: AllEventsAdapter
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter(recycler_view)
         subscribeObservers()
-        allEventsViewModel.getAllEvents()
+        allEventsViewModel.getAllEventsReverseByUserId(FirebaseAuth.getInstance().uid!!)
     }
 
     private fun subscribeObservers() {

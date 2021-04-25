@@ -188,6 +188,9 @@ class FirebaseRepository {
             }
             return@removeIf flag
         }
+        events.removeIf {
+           it.players?.size == it.playersCount
+        }
         Timber.d("$events")
         Resource.Success(events)
     }
@@ -196,6 +199,17 @@ class FirebaseRepository {
         val event = events.document(id).get().await().toObject(Event::class.java)
         (event?.players as ArrayList).add(player)
         events.document(id).set(event).await()
+        Resource.Success<Unit>()
+    }
+
+    suspend fun unsubscribeEventById(id: String, player: Player) = safeCall {
+        val event = events.document(id).get().await().toObject(Event::class.java)
+        (event?.players as ArrayList).remove(player)
+        events.document(id).set(event).await()
+        Resource.Success<Unit>()
+    }
+    suspend fun deleteEventById(id:String) = safeCall {
+        events.document(id).delete().await()
         Resource.Success<Unit>()
     }
 

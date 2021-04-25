@@ -10,6 +10,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Menu
@@ -17,6 +18,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -27,6 +29,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.zolax.zevent.R
 import com.zolax.zevent.models.Event
@@ -51,13 +54,14 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requestPermission()
         launchMap(savedInstanceState)
         setHasOptionsMenu(true)
         subscribeObservers()
-        mapViewModel.getAllEvents()
+        mapViewModel.getAllEventsReverseByUserId(FirebaseAuth.getInstance().uid!!)
     }
 
     private fun subscribeObservers() {
@@ -141,17 +145,21 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         }
     }
 
-    @SuppressLint("MissingPermission", "NewApi")
+
+    @SuppressLint("NewApi", "MissingPermission")
     private fun moveCameraToUserLocation() {
         val locationManager =
             requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (locationManager.isLocationEnabled) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                map?.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(
-                        LatLng(it.latitude, it.longitude), MAP_CAMERA_ZOOM
+                it?.let {
+                    map?.moveCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(it.latitude, it.longitude), MAP_CAMERA_ZOOM
+                        )
                     )
-                )
+                }
+
             }
         } else {
             buildAlertMessageNoLocationService()
