@@ -216,6 +216,7 @@
                         android:background="@drawable/event_map_btn_background"
                         android:elevation="8dp"
                         android:src="@drawable/ic_map_36" />
+
                 </LinearLayout>
 
 

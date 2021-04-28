@@ -70,6 +70,7 @@ class AuthorisationViewModel @ViewModelInject constructor(
             this.age = age
             this.name = name
             this.prefers = prefers
+            this.distanceToSearchEvents = 5
             try {
                 telephoneNumber.toInt()
             }catch (error: NumberFormatException){

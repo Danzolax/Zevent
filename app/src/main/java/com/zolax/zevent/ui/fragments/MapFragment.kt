@@ -54,14 +54,25 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requestPermission()
         launchMap(savedInstanceState)
         setHasOptionsMenu(true)
         subscribeObservers()
-        mapViewModel.getAllEventsReverseByUserId(FirebaseAuth.getInstance().uid!!)
+
+        if ((requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).isLocationEnabled) {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                it?.let {
+                    mapViewModel.getAllEventsReverseByUserIdWithRadius(FirebaseAuth.getInstance().uid!!,
+                        LatLng(it.latitude,it.longitude)
+                    )
+                }
+            }
+        } else {
+            buildAlertMessageNoLocationService()
+        }
     }
 
     private fun subscribeObservers() {
@@ -166,6 +177,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         }
 
     }
+
 
     private fun mapUISettings() {
         map?.uiSettings?.isCompassEnabled = false

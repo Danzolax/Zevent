@@ -89,5 +89,12 @@
         <action
             android:id="@+id/action_myEventMoreFragment_to_simpleMapViewerFragment"
             app:destination="@id/simpleMapViewerFragment" />
+        <action
+            android:id="@+id/action_myEventMoreFragment_to_eventLocationEditFragment"
+            app:destination="@id/eventLocationEditFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/eventLocationEditFragment"
+        android:name="com.zolax.zevent.ui.fragments.EventLocationEditFragment"
+        android:label="EventLocationEditFragment" />
 </navigation>

@@ -1,14 +1,12 @@
 package com.zolax.zevent.repositories
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.location.Location
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
@@ -20,9 +18,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.lang.Exception
 import java.util.*
-import kotlin.collections.ArrayList
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class FirebaseRepository {
     private val auth = FirebaseAuth.getInstance()
@@ -40,18 +40,6 @@ class FirebaseRepository {
         }
     }
 
-
-
-    suspend fun updateUserLocation(location: Location): Unit = withContext(Dispatchers.IO) {
-        val geoPoint = GeoPoint(
-            location.latitude, location.longitude
-        )
-        users.document(
-            auth.uid!!
-        ).update(
-            hashMapOf<String, Any>("lastLocation" to geoPoint)
-        ).await()
-    }
 
     suspend fun signUpWithEmail(user: User, password: String) = withContext(Dispatchers.IO) {
         safeCall {
@@ -126,14 +114,6 @@ class FirebaseRepository {
         Resource.Success<Unit>()
     }
 
-//        Timber.d("end update user image")
-//        val imageUri = res.metadata?.reference?.downloadUrl?.await()
-//        Timber.d("URI: $imageUri")
-//        users.document(firebaseUser.uid).update("imageURI",imageUri).await()
-//        Timber.d("End fun")
-
-
-
     suspend fun downloadCurrentUserImage() =
         safeCall {
             val maxDownloadSize = 5L * 1024 * 1024
@@ -141,7 +121,7 @@ class FirebaseRepository {
             Resource.Success(url)
         }
 
-    suspend fun addEvent(event:Event) =
+    suspend fun addEvent(event: Event) =
         safeCall {
             events.add(event).await()
             Resource.Success<Unit>()
@@ -195,6 +175,47 @@ class FirebaseRepository {
         Resource.Success(events)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng) = safeCall {
+        val events = events.get().await().toObjects(Event::class.java)
+        Timber.d("load all events by $id")
+        Timber.d("$events")
+        events.removeIf {
+            var flag = false
+            it.players?.forEach { elem ->
+                if ( elem.userId.equals(id)){
+                    flag = true
+                    return@forEach
+                }
+            }
+            return@removeIf flag
+        }
+        events.removeIf {
+            it.players?.size == it.playersCount
+        }
+        events.removeIf {
+            distance(userLocation.latitude,
+                userLocation.longitude,
+                it.latitude!!,
+                it.longitude!!,) > 5000
+        }
+        Timber.d("$events")
+        Resource.Success(events)
+    }
+
+    private fun distance(lat_a: Double, lng_a: Double, lat_b: Double, lng_b: Double): Double {
+        val earthRadius = 3958.75
+        val latDiff = Math.toRadians((lat_b - lat_a))
+        val lngDiff = Math.toRadians((lng_b - lng_a))
+        val a = sin(latDiff / 2) * sin(latDiff / 2) +
+                cos(Math.toRadians(lat_a)) * cos(Math.toRadians(lat_b)) *
+                sin(lngDiff / 2) * sin(lngDiff / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        val distance = earthRadius * c
+        val meterConversion = 1609
+        return (distance * meterConversion.toDouble())
+    }
+
     suspend fun  subscribeEventById(id: String, player: Player) = safeCall {
         val event = events.document(id).get().await().toObject(Event::class.java)
         (event?.players as ArrayList).add(player)
@@ -208,9 +229,25 @@ class FirebaseRepository {
         events.document(id).set(event).await()
         Resource.Success<Unit>()
     }
-    suspend fun deleteEventById(id:String) = safeCall {
+    suspend fun deleteEventById(id: String) = safeCall {
         events.document(id).delete().await()
         Resource.Success<Unit>()
+    }
+
+    suspend fun updateEventLocationtById(id: String, location: LatLng) = safeCall {
+        val event = events.document(id).get().await().toObject(Event::class.java)
+       event?.let {
+           it.latitude = location.latitude
+           it.longitude = location.longitude
+           events.document(id).set(it).await()
+       }
+        Resource.Success<Unit>()
+    }
+
+    suspend fun getEventById(id: String) = safeCall {
+        val event = events.document(id).get().await().toObject(Event::class.java)
+        val latlng: LatLng = LatLng(3.1, 4.1)
+        Resource.Success(event)
     }
 
 

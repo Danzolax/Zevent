@@ -221,18 +221,7 @@
                         android:elevation="8dp"
                         android:src="@drawable/ic_map_36" />
 
-                    <androidx.appcompat.widget.AppCompatButton
-                        android:id="@+id/auto_map_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="8dp"
-                        android:background="@drawable/event_map_btn_background"
-                        android:elevation="8dp"
-                        android:fontFamily="@font/oxygen"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:text="АВТОПОДБОР"
-                        android:textColor="@android:color/black" />
+
                 </LinearLayout>
 
 

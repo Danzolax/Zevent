@@ -66,8 +66,7 @@ class MyEventsAdapter : RecyclerView.Adapter<MyEventsAdapter.AllEventsViewHolder
             }
             moreButton.setOnClickListener {
                 val bundle = Bundle()
-                val gson = Gson()
-                bundle.putString("event", gson.toJson(event))
+                bundle.putString("eventId", event.id)
                 findNavController().navigate(R.id.action_eventsFragment_to_myEventMoreFragment, bundle)
             }
 

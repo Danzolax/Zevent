@@ -6,6 +6,7 @@ import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.zolax.zevent.models.Event
 import com.zolax.zevent.repositories.FirebaseRepository
 import com.zolax.zevent.util.Resource
@@ -20,6 +21,12 @@ class MapViewModel @ViewModelInject constructor(
     @RequiresApi(Build.VERSION_CODES.N)
     fun getAllEventsReverseByUserId(id: String) = viewModelScope.launch {
         val response = firebaseRepository.getAllEventsReverseByUserId(id)
+        eventsData.postValue(response)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun getAllEventsReverseByUserIdWithRadius(id: String,userLocation: LatLng) = viewModelScope.launch {
+        val response = firebaseRepository.getAllEventsReverseByUserIdWithRadius(id,userLocation)
         eventsData.postValue(response)
     }
 }

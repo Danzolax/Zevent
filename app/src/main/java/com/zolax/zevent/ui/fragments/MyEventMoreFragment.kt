@@ -25,18 +25,15 @@ import java.util.*
 
 @AndroidEntryPoint
 class MyEventMoreFragment : Fragment(R.layout.fragment_my_event_more) {
-    val myEventMoreViewModel: MyEventMoreViewModel by viewModels()
+    private val myEventMoreViewModel: MyEventMoreViewModel by viewModels()
     lateinit var event: Event
-    lateinit var player: Player
+    private lateinit var player: Player
     private val gson = Gson()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initUI()
-        setHasOptionsMenu(true)
-        initButtons()
         subscribeObservers()
-
+        myEventMoreViewModel.getEventById(requireArguments().getString("eventId")!!)
     }
 
 
@@ -53,10 +50,28 @@ class MyEventMoreFragment : Fragment(R.layout.fragment_my_event_more) {
                 }
             }
         })
+
+        myEventMoreViewModel.currentEvent.observe(viewLifecycleOwner,{result ->
+            when(result){
+                is Resource.Success ->{
+                    result.data?.let {
+                        event = it
+                        initUI()
+                        initButtons()
+                        setHasOptionsMenu(true)
+                    }
+                }
+                is Resource.Error ->{
+                    Snackbar.make(requireView(),"Мероприятие не найдено", Snackbar.LENGTH_SHORT)
+                    findNavController().popBackStack()
+                }
+            }
+        })
+
     }
 
     private fun initUI() {
-        event = gson.fromJson(requireArguments().getString("event"),Event::class.java)
+
         title.text = event.title
         type.text = event.category
         players_count.text = "${event.players?.size}/${event.playersCount}"
@@ -111,6 +126,7 @@ class MyEventMoreFragment : Fragment(R.layout.fragment_my_event_more) {
         }
         if (event.players?.get(0)?.userId == FirebaseAuth.getInstance().uid){
             menu.findItem(R.id.action_delete_event).isVisible = true
+            menu.findItem(R.id.action_edit).isVisible = true
         }else{
             menu.findItem(R.id.action_unsubscribe).isVisible = true
 
@@ -136,6 +152,12 @@ class MyEventMoreFragment : Fragment(R.layout.fragment_my_event_more) {
                 DialogUtil.buildConfirmDialog(requireContext(),"Вы точно хотите удалить мероприятие") { _, _ ->
                     myEventMoreViewModel.deleteEventById(event.id!!)
                 }.show()
+                true
+            }
+            R.id.action_edit ->{
+                val bundle = Bundle()
+                bundle.putString("event",gson.toJson(event))
+                findNavController().navigate(R.id.action_myEventMoreFragment_to_eventLocationEditFragment,bundle)
                 true
             }
             else -> super.onOptionsItemSelected(item)
