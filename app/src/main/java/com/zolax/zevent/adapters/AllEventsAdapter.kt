@@ -69,6 +69,14 @@ class AllEventsAdapter : RecyclerView.Adapter<AllEventsAdapter.AllEventsViewHold
                 bundle.putString("event",gson.toJson(event))
                 findNavController().navigate(R.id.action_eventsFragment_to_subscribeOnEventFragment, bundle)
             }
+            eventPlayersCount.setOnClickListener {
+                val bundle = Bundle()
+                val gson = Gson()
+                bundle.putString("event",gson.toJson(event))
+                findNavController().navigate(R.id.action_eventsFragment_to_eventPlayersFragment, bundle)
+
+            }
+
         }
     }
 

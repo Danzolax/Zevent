@@ -26,6 +26,9 @@
         <action
             android:id="@+id/action_eventsFragment_to_myEventMoreFragment"
             app:destination="@id/myEventMoreFragment" />
+        <action
+            android:id="@+id/action_eventsFragment_to_eventPlayersFragment"
+            app:destination="@id/eventPlayersFragment" />
     </fragment>
     <fragment
         android:id="@+id/mapFragment"
@@ -97,4 +100,8 @@
         android:id="@+id/eventLocationEditFragment"
         android:name="com.zolax.zevent.ui.fragments.EventLocationEditFragment"
         android:label="EventLocationEditFragment" />
+    <fragment
+        android:id="@+id/eventPlayersFragment"
+        android:name="com.zolax.zevent.ui.fragments.EventPlayersFragment"
+        android:label="EventPlayersFragment" />
 </navigation>

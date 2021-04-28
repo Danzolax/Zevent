@@ -1,6 +1,5 @@
 package com.zolax.zevent.repositories
 
-import android.location.Location
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -41,7 +40,7 @@ class FirebaseRepository {
     }
 
 
-    suspend fun signUpWithEmail(user: User, password: String) = withContext(Dispatchers.IO) {
+    suspend fun signUpWithEmail(user: User, password: String,uri: Uri) = withContext(Dispatchers.IO) {
         safeCall {
             val firebaseUser: FirebaseUser?
             val result = FirebaseAuth.getInstance()
@@ -49,6 +48,7 @@ class FirebaseRepository {
                 .await()
             firebaseUser = result.user
             users.document(firebaseUser!!.uid).set(user).await()
+            storageRef.child(firebaseUser.uid).putFile(uri).await()
             Resource.Success<Unit>()
         }
 
@@ -107,6 +107,7 @@ class FirebaseRepository {
             Resource.Success<Unit>()
         }
 
+    //TODO фото по умолчанию
     suspend fun updateImageOfCurrentUser(uri: Uri) = safeCall {
         Timber.d("start fun ")
         Timber.d("start update user image uri:$uri")
@@ -116,10 +117,11 @@ class FirebaseRepository {
 
     suspend fun downloadCurrentUserImage() =
         safeCall {
-            val maxDownloadSize = 5L * 1024 * 1024
             val url = storageRef.child(getCurrentUserId()).downloadUrl.await()
             Resource.Success(url)
         }
+
+
 
     suspend fun addEvent(event: Event) =
         safeCall {
@@ -194,10 +196,12 @@ class FirebaseRepository {
             it.players?.size == it.playersCount
         }
         events.removeIf {
-            distance(userLocation.latitude,
+            distance(
+                userLocation.latitude,
                 userLocation.longitude,
                 it.latitude!!,
-                it.longitude!!,) > 5000
+                it.longitude!!,
+            ) > 5000
         }
         Timber.d("$events")
         Resource.Success(events)
@@ -246,8 +250,25 @@ class FirebaseRepository {
 
     suspend fun getEventById(id: String) = safeCall {
         val event = events.document(id).get().await().toObject(Event::class.java)
-        val latlng: LatLng = LatLng(3.1, 4.1)
         Resource.Success(event)
+    }
+
+    private suspend fun downloadUserImage(id: String) = storageRef.child(id).downloadUrl.await()
+
+
+    suspend fun getPlayersByEventId(id: String) = safeCall {
+        val players: ArrayList<Triple<User, Player, Uri>> = arrayListOf()
+        val event = events.document(id).get().await().toObject(Event::class.java)
+        event!!.players!!.forEach { player ->
+            players.add(
+                Triple(
+                    getUser(player.userId!!).data!!,
+                    player,
+                    downloadUserImage(player.userId!!),
+                )
+            )
+        }
+        Resource.Success(players)
     }
 
 

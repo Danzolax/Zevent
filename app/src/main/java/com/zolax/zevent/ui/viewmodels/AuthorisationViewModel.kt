@@ -1,5 +1,6 @@
 package com.zolax.zevent.ui.viewmodels
 
+import android.net.Uri
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 
@@ -40,6 +41,7 @@ class AuthorisationViewModel @ViewModelInject constructor(
         age: String,
         prefers: String,
         aboutMe: String,
+        uri: Uri
     ) = viewModelScope.launch {
         signUpData.value?.let {
             if (it is Resource.Loading){
@@ -79,7 +81,8 @@ class AuthorisationViewModel @ViewModelInject constructor(
             }
             this.telephoneNumber = telephoneNumber
         }
-        val response = firebaseRepository.signUpWithEmail(user, password)
+
+        val response = firebaseRepository.signUpWithEmail(user, password,uri)
         signUpData.postValue(response)
     }
 
