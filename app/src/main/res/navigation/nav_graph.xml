@@ -26,9 +26,6 @@
         <action
             android:id="@+id/action_eventsFragment_to_myEventMoreFragment"
             app:destination="@id/myEventMoreFragment" />
-        <action
-            android:id="@+id/action_eventsFragment_to_eventPlayersFragment"
-            app:destination="@id/eventPlayersFragment" />
     </fragment>
     <fragment
         android:id="@+id/mapFragment"
@@ -80,6 +77,9 @@
         <action
             android:id="@+id/action_subscribeOnEventFragment_to_simpleMapViewerFragment"
             app:destination="@id/simpleMapViewerFragment" />
+        <action
+            android:id="@+id/action_subscribeOnEventFragment_to_eventPlayersFragment"
+            app:destination="@id/eventPlayersFragment" />
     </fragment>
     <fragment
         android:id="@+id/allEventsFragment"
@@ -95,6 +95,9 @@
         <action
             android:id="@+id/action_myEventMoreFragment_to_eventLocationEditFragment"
             app:destination="@id/eventLocationEditFragment" />
+        <action
+            android:id="@+id/action_myEventMoreFragment_to_myEventPlayersFragment"
+            app:destination="@id/myEventPlayersFragment" />
     </fragment>
     <fragment
         android:id="@+id/eventLocationEditFragment"
@@ -104,4 +107,8 @@
         android:id="@+id/eventPlayersFragment"
         android:name="com.zolax.zevent.ui.fragments.EventPlayersFragment"
         android:label="EventPlayersFragment" />
+    <fragment
+        android:id="@+id/myEventPlayersFragment"
+        android:name="com.zolax.zevent.ui.fragments.MyEventPlayersFragment"
+        android:label="MyEventPlayersFragment" />
 </navigation>

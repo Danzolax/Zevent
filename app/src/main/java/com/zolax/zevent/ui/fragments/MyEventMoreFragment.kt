@@ -105,6 +105,12 @@ class MyEventMoreFragment : Fragment(R.layout.fragment_my_event_more) {
                 bundle
             )
         }
+        players_count.setOnClickListener {
+            val bundle = Bundle()
+            val gson = Gson()
+            bundle.putString("event",gson.toJson(event))
+            findNavController().navigate(R.id.action_myEventMoreFragment_to_myEventPlayersFragment,bundle)
+        }
     }
 
     private fun setDateTimeInTextView(pickedDateTime: Calendar) {

@@ -6,28 +6,28 @@ import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
@@ -49,24 +49,27 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener {
     private val mapViewModel: MapViewModel by viewModels()
     private var map: GoogleMap? = null
+    lateinit var manager : LocationManager
+
 
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
+    @SuppressLint("MissingPermission")
 
-    @RequiresApi(Build.VERSION_CODES.P)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requestPermission()
+        manager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         launchMap(savedInstanceState)
         setHasOptionsMenu(true)
         subscribeObservers()
-
-        if ((requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).isLocationEnabled) {
+        if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                 it?.let {
-                    mapViewModel.getAllEventsReverseByUserIdWithRadius(FirebaseAuth.getInstance().uid!!,
-                        LatLng(it.latitude,it.longitude)
+                    mapViewModel.getAllEventsReverseByUserIdWithRadius(
+                        FirebaseAuth.getInstance().uid!!,
+                        LatLng(it.latitude, it.longitude)
                     )
                 }
             }
@@ -79,12 +82,16 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         mapViewModel.eventsData.observe(viewLifecycleOwner, { result ->
             when (result) {
                 is Resource.Success -> {
-                    result.data?.forEach {elem ->
+                    result.data?.forEach { elem ->
                         setMarkerOnMap(elem)
                     }
                 }
-                is Resource.Error ->{
-                    Snackbar.make(requireView(),"Невозможно загрузить мероприятия",Snackbar.LENGTH_SHORT)
+                is Resource.Error -> {
+                    Snackbar.make(
+                        requireView(),
+                        "Невозможно загрузить мероприятия",
+                        Snackbar.LENGTH_SHORT
+                    )
                 }
             }
         })
@@ -102,10 +109,12 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     }
 
     private fun setMarkerOnMap(event: Event) {
-        val marker: Marker? = map?.addMarker(MarkerOptions()
-            .position(LatLng(event.latitude!!,event.longitude!!))
-            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-            .title(event.title))
+        val marker: Marker? = map?.addMarker(
+            MarkerOptions()
+                .position(LatLng(event.latitude!!, event.longitude!!))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                .title(event.title)
+        )
         marker?.tag = event
 
     }
@@ -116,8 +125,11 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
             if (it.tag is Event){
                 val bundle = Bundle()
                 val gson = Gson()
-                bundle.putString("event",gson.toJson(it.tag))
-                findNavController().navigate(R.id.action_mapFragment_to_subscribeOnEventFragment, bundle)
+                bundle.putString("event", gson.toJson(it.tag))
+                findNavController().navigate(
+                    R.id.action_mapFragment_to_subscribeOnEventFragment,
+                    bundle
+                )
                 return true
             }
         }
@@ -157,14 +169,12 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     }
 
 
-    @SuppressLint("NewApi", "MissingPermission")
+    @SuppressLint("MissingPermission")
     private fun moveCameraToUserLocation() {
-        val locationManager =
-            requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if (locationManager.isLocationEnabled) {
+        if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                 it?.let {
-                    map?.moveCamera(
+                    map?.animateCamera(
                         CameraUpdateFactory.newLatLngZoom(
                             LatLng(it.latitude, it.longitude), MAP_CAMERA_ZOOM
                         )

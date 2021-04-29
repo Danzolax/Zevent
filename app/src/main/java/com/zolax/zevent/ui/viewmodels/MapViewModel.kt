@@ -24,7 +24,6 @@ class MapViewModel @ViewModelInject constructor(
         eventsData.postValue(response)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     fun getAllEventsReverseByUserIdWithRadius(id: String,userLocation: LatLng) = viewModelScope.launch {
         val response = firebaseRepository.getAllEventsReverseByUserIdWithRadius(id,userLocation)
         eventsData.postValue(response)

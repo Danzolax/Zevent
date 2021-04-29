@@ -64,7 +64,6 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/oxygen"
                         android:gravity="end"
-                        android:text="Футбол"
                         android:textColor="@color/main_text_color"
                         android:textSize="18sp" />
                 </LinearLayout>
@@ -90,8 +89,7 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/oxygen"
                         android:gravity="end"
-                        android:text="4/12"
-                        android:textColor="@color/main_text_color"
+                        android:textColor="@color/header_text_color"
                         android:textSize="18sp" />
                 </LinearLayout>
 

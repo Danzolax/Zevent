@@ -177,7 +177,6 @@ class FirebaseRepository {
         Resource.Success(events)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng) = safeCall {
         val events = events.get().await().toObjects(Event::class.java)
         Timber.d("load all events by $id")

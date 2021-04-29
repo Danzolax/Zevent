@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -59,6 +60,12 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
                 R.id.action_subscribeOnEventFragment_to_simpleMapViewerFragment,
                 bundle
             )
+        }
+        players_count.setOnClickListener {
+            val bundle = Bundle()
+            val gson = Gson()
+            bundle.putString("event",gson.toJson(event))
+            findNavController().navigate(R.id.action_subscribeOnEventFragment_to_eventPlayersFragment, bundle)
         }
     }
 
