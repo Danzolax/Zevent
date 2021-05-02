@@ -1,7 +1,14 @@
 package com.zolax.zevent.ui.fragments
+import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
+import android.content.Intent
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
+import android.provider.Settings
 import android.text.format.DateUtils
 import android.view.Menu
 import android.view.MenuInflater
@@ -14,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -26,6 +34,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_add_event.*
 import timber.log.Timber
 import java.util.*
+import javax.inject.Inject
 import kotlin.collections.ArrayList
 
 @AndroidEntryPoint
@@ -33,8 +42,14 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
     private val addEventViewModel: AddEventViewModel by viewModels()
     private val needDatetime = Calendar.getInstance()
 
+    @Inject
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    lateinit var manager : LocationManager
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        manager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         setDateTimeInTextView(Calendar.getInstance())
         initButtons()
         setHasOptionsMenu(true)
@@ -42,36 +57,37 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
         subsribeObservers()
     }
 
-    private fun createEvent(): Event {
-        val event = Event()
-        if (players_count.text.toString() != "" && createPlayer() != null) {
+    private fun createEvent( location: Location): Event? {
+        if (players_count.text.toString() != "" && createPlayer(location) != null) {
+            val event = Event()
             event.title = title.text.toString()
             event.category = types.selectedItem as String
             event.playersCount = Integer.parseInt(players_count.text.toString())
             event.eventDateTime = needDatetime.time
             event.isNeedEquip = is_need_equip.isChecked
             event.needEquip = equip.text.toString()
-            event.players = arrayListOf(createPlayer()!!)
+            event.players = arrayListOf(createPlayer(location)!!)
             val latitude: Double = requireArguments().getDouble("latitude")
             val longitude: Double = requireArguments().getDouble("longitude")
             event.latitude = latitude
             event.longitude = longitude
+            return event
         } else {
             Snackbar.make(requireView(), "Введите количество игроков!", Snackbar.LENGTH_SHORT)
                 .show()
-
+            return null
         }
 
-
-        return event
     }
 
-    private fun createPlayer(): Player? {
+    private fun createPlayer(location: Location): Player? {
         return FirebaseAuth.getInstance().currentUser?.uid?.let {
             Player(
                 it,
                 role.selectedItem as String,
-                rank.selectedItem as String
+                rank.selectedItem as String,
+                location.latitude,
+                location.longitude
             )
         }
     }
@@ -214,6 +230,7 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
         inflater.inflate(R.menu.appbar_menu, menu)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
@@ -221,8 +238,19 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                 true
             }
             R.id.action_confirm -> {
-                Timber.d(createEvent().toString())
-                addEventViewModel.addEvent(createEvent())
+                if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                        if (it != null){
+                            createEvent(it)?.let {event ->
+                                addEventViewModel.addEvent(event)
+                            }
+                        } else{
+                            Snackbar.make(requireView(), "Нажмите кнопку через пару секунд", Snackbar.LENGTH_SHORT)
+                        }
+                    }
+                } else {
+                    buildAlertMessageNoLocationService()
+                }
                 true
             }
             else -> {
@@ -231,6 +259,18 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
             }
         }
     }
+
+    private fun buildAlertMessageNoLocationService() {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        builder.setCancelable(false)
+            .setMessage("Включите GPS для отслеживания вашего местоположения")
+            .setPositiveButton(
+                "Включить"
+            ) { _, _ -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+        val alert: AlertDialog = builder.create()
+        alert.show()
+    }
+
 
 
 }

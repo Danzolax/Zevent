@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.LocalDate
 import java.util.*
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -30,7 +31,7 @@ class FirebaseRepository {
     private val users = Firebase.firestore.collection("users")
     private val events = Firebase.firestore.collection("events")
 
-    private inline fun <T> safeCall(action: () -> Resource<T>): Resource<T> { //TODO как работает
+    private inline fun <T> safeCall(action: () -> Resource<T>): Resource<T> {
         return try {
             action()
         } catch (e: Exception) {
@@ -40,19 +41,19 @@ class FirebaseRepository {
     }
 
 
-    suspend fun signUpWithEmail(user: User, password: String,uri: Uri) = withContext(Dispatchers.IO) {
-        safeCall {
-            val firebaseUser: FirebaseUser?
-            val result = FirebaseAuth.getInstance()
-                .createUserWithEmailAndPassword(user.email!!, password)
-                .await()
-            firebaseUser = result.user
-            users.document(firebaseUser!!.uid).set(user).await()
-            storageRef.child(firebaseUser.uid).putFile(uri).await()
-            Resource.Success<Unit>()
+    suspend fun signUpWithEmail(user: User, password: String, uri: Uri) =
+        withContext(Dispatchers.IO) {
+            safeCall {
+                val firebaseUser: FirebaseUser?
+                val result = FirebaseAuth.getInstance()
+                    .createUserWithEmailAndPassword(user.email!!, password)
+                    .await()
+                firebaseUser = result.user
+                users.document(firebaseUser!!.uid).set(user).await()
+                storageRef.child(firebaseUser.uid).putFile(uri).await()
+                Resource.Success<Unit>()
+            }
         }
-
-    }
 
     suspend fun signInWithEmail(email: String, password: String) = withContext(Dispatchers.IO) {
         safeCall {
@@ -71,13 +72,13 @@ class FirebaseRepository {
 
     fun isAuthenticated() = auth.currentUser != null
 
-    fun getCurrentUserId(): String = auth.uid!!
+    private fun getCurrentUserId(): String = auth.uid!!
 
     suspend fun getCurrentUser(): Resource<User> {
         return getUser(auth.uid!!)
     }
 
-    suspend fun getUser(uid: String): Resource<User> = withContext(Dispatchers.IO) {
+    private suspend fun getUser(uid: String): Resource<User> = withContext(Dispatchers.IO) {
         safeCall {
             Resource.Success(
                 users
@@ -122,7 +123,6 @@ class FirebaseRepository {
         }
 
 
-
     suspend fun addEvent(event: Event) =
         safeCall {
             events.add(event).await()
@@ -144,10 +144,10 @@ class FirebaseRepository {
         events.removeIf {
             var flag = false
             it.players?.forEach { elem ->
-               if ( elem.userId.equals(id)){
-                   flag = true
-                   return@forEach
-               }
+                if (elem.userId.equals(id)) {
+                    flag = true
+                    return@forEach
+                }
             }
             return@removeIf !flag
         }
@@ -163,7 +163,7 @@ class FirebaseRepository {
         events.removeIf {
             var flag = false
             it.players?.forEach { elem ->
-                if ( elem.userId.equals(id)){
+                if (elem.userId.equals(id)) {
                     flag = true
                     return@forEach
                 }
@@ -171,7 +171,7 @@ class FirebaseRepository {
             return@removeIf flag
         }
         events.removeIf {
-           it.players?.size == it.playersCount
+            it.players?.size == it.playersCount
         }
         Timber.d("$events")
         Resource.Success(events)
@@ -184,7 +184,7 @@ class FirebaseRepository {
         events.removeIf {
             var flag = false
             it.players?.forEach { elem ->
-                if ( elem.userId.equals(id)){
+                if (elem.userId.equals(id)) {
                     flag = true
                     return@forEach
                 }
@@ -219,7 +219,7 @@ class FirebaseRepository {
         return (distance * meterConversion.toDouble())
     }
 
-    suspend fun  subscribeEventById(id: String, player: Player) = safeCall {
+    suspend fun subscribeEventById(id: String, player: Player) = safeCall {
         val event = events.document(id).get().await().toObject(Event::class.java)
         (event?.players as ArrayList).add(player)
         events.document(id).set(event).await()
@@ -232,6 +232,7 @@ class FirebaseRepository {
         events.document(id).set(event).await()
         Resource.Success<Unit>()
     }
+
     suspend fun deleteEventById(id: String) = safeCall {
         events.document(id).delete().await()
         Resource.Success<Unit>()
@@ -239,11 +240,11 @@ class FirebaseRepository {
 
     suspend fun updateEventLocationtById(id: String, location: LatLng) = safeCall {
         val event = events.document(id).get().await().toObject(Event::class.java)
-       event?.let {
-           it.latitude = location.latitude
-           it.longitude = location.longitude
-           events.document(id).set(it).await()
-       }
+        event?.let {
+            it.latitude = location.latitude
+            it.longitude = location.longitude
+            events.document(id).set(it).await()
+        }
         Resource.Success<Unit>()
     }
 
@@ -270,6 +271,126 @@ class FirebaseRepository {
         Resource.Success(players)
     }
 
+    suspend fun getFilteredList(
+        id: String,
+        location: LatLng,
+        category: String,
+        date: String,
+        isNeedEquip: Boolean,
+        currentPlayersCount: Int?,
+        allPlayersCount: Int?
+    ) = safeCall {
+        val response = getAllEventsReverseByUserIdWithRadius(id, location)
+        if (response is Resource.Error){
+            return@safeCall response
+        }
+        var eventList = response.data!!
+        if (category != "Не фильтровать") {
+            eventList = eventList.filter {
+                it.category == category
+            }
+        }
+        if (date != "Не фильтровать"){
+            val calendar = Calendar.getInstance()
+            when(date){
+                "Сегодня" ->{
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)) and
+                                (eventCalendar.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH))
+                    }
+                }
+                "На этой неделе" ->{
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)) and
+                                (eventCalendar.get(Calendar.WEEK_OF_MONTH) == calendar.get(Calendar.WEEK_OF_MONTH))
+                    }
+                }
+                "В этом месяце" ->{
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH))
+                    }
+                }
+            }
+        }
+        if(isNeedEquip){
+            eventList = eventList.filter {it.isNeedEquip}
+        }
+        currentPlayersCount?.let {
+            eventList = eventList.filter { event-> event.players!!.size == currentPlayersCount }
+        }
+        allPlayersCount?.let {
+            eventList = eventList.filter { event-> event.playersCount== allPlayersCount }
+        }
+        Resource.Success(eventList)
+    }
 
-
+    suspend fun getFilteredListByUserId(
+        id: String,
+        category: String,
+        date: String,
+        isNeedEquip: Boolean,
+        currentPlayersCount: Int?,
+        allPlayersCount: Int?
+    ) = safeCall {
+        val response = getAllEventsByUserId(id)
+        if (response is Resource.Error){
+            return@safeCall response
+        }
+        var eventList = response.data!!
+        if (category != "Не фильтровать") {
+            eventList = eventList.filter {
+                it.category == category
+            }
+        }
+        if (date != "Не фильтровать"){
+            val calendar = Calendar.getInstance()
+            when(date){
+                "Сегодня" ->{
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)) and
+                                (eventCalendar.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH))
+                    }
+                }
+                "На этой неделе" ->{
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)) and
+                                (eventCalendar.get(Calendar.WEEK_OF_MONTH) == calendar.get(Calendar.WEEK_OF_MONTH))
+                    }
+                }
+                "В этом месяце" ->{
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH))
+                    }
+                }
+            }
+        }
+        if(isNeedEquip){
+            eventList = eventList.filter {it.isNeedEquip}
+        }
+        currentPlayersCount?.let {
+            eventList = eventList.filter { event-> event.players!!.size == currentPlayersCount }
+        }
+        allPlayersCount?.let {
+            eventList = eventList.filter { event-> event.playersCount== allPlayersCount }
+        }
+        Resource.Success(eventList)
+    }
 }

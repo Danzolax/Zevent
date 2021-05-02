@@ -22,4 +22,16 @@ class MyEventsViewModel @ViewModelInject constructor(
         val response = firebaseRepository.getAllEventsByUserId(id)
         eventsData.postValue(response)
     }
+
+    fun getFilteredListByUserId(
+        id: String,
+        category: String,
+        date: String,
+        isNeedEquip: Boolean,
+        currentPlayersCount: Int?,
+        allPlayersCount: Int?
+    ) = viewModelScope.launch {
+        val response = firebaseRepository.getFilteredListByUserId(id, category, date, isNeedEquip, currentPlayersCount, allPlayersCount)
+        eventsData.postValue(response)
+    }
 }

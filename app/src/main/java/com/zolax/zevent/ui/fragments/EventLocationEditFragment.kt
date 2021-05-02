@@ -20,12 +20,16 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.zolax.zevent.R
 import com.zolax.zevent.models.Event
+import com.zolax.zevent.models.Player
 import com.zolax.zevent.ui.viewmodels.EventLocationEditViewModel
 import com.zolax.zevent.util.Constants
 import com.zolax.zevent.util.DialogUtil
+import com.zolax.zevent.util.LocationRecommend
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_event_location_edit.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.android.synthetic.main.fragment_map.mapView
 
 
 @AndroidEntryPoint
@@ -42,7 +46,19 @@ class EventLocationEditFragment : Fragment(R.layout.fragment_event_location_edit
         launchMap(savedInstanceState)
         event = gson.fromJson(requireArguments().getString("event"), Event::class.java)
         subscribeObservers()
+        initButtons()
 
+    }
+
+    private fun initButtons() {
+        auto_map_button.setOnClickListener {
+            if (event.players!!.size > 2){
+                setRecMarkerOnMap(LocationRecommend.getRecommendLocation(event.players as ArrayList<Player>),"Рекомендуемое место проведения")
+
+            } else{
+                Snackbar.make(requireView(),"Слишком мало людей",Snackbar.LENGTH_SHORT).setAnimationMode(Snackbar.ANIMATION_MODE_SLIDE).show()
+            }
+        }
     }
 
     private fun subscribeObservers() {
@@ -80,23 +96,30 @@ class EventLocationEditFragment : Fragment(R.layout.fragment_event_location_edit
                 if (newMarker == null) {
                     isEditLocation = true
                     (requireActivity() as AppCompatActivity).invalidateOptionsMenu()
-                    newMarker = setMarkerOnMap(location)
+                    newMarker = setMarkerOnMap(location,"Новое место проведения мероприятия")
                 } else {
                     newMarker!!.remove()
-                    newMarker = setMarkerOnMap(location)
+                    newMarker = setMarkerOnMap(location,"Новое место проведения мероприятия")
                 }
             }
         }
     }
 
-    private fun setMarkerOnMap(location: LatLng): Marker? {
+    private fun setMarkerOnMap(location: LatLng,title: String): Marker? {
         return map?.addMarker(
             MarkerOptions()
                 .position(location)
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
-                .title("Новое место проведения мероприятия")
+                .title(title)
         )
-
+    }
+    private fun setRecMarkerOnMap(location: LatLng,title: String): Marker? {
+        return map?.addMarker(
+            MarkerOptions()
+                .position(location)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                .title(title)
+        )
     }
 
 

@@ -1,4 +1,5 @@
-package com.zolax.zevent.ui.fragments
+
+ package com.zolax.zevent.ui.fragments
 
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
@@ -14,10 +15,9 @@ import android.provider.Settings
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -34,13 +34,19 @@ import com.google.gson.Gson
 import com.zolax.zevent.R
 import com.zolax.zevent.models.Event
 import com.zolax.zevent.ui.viewmodels.MapViewModel
+import com.zolax.zevent.util.Constants
 import com.zolax.zevent.util.Constants.MAP_CAMERA_ZOOM
 import com.zolax.zevent.util.Constants.REQUEST_LOCATION_AGAIN
+import com.zolax.zevent.util.DialogUtil
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.filter_dialog.*
+import kotlinx.android.synthetic.main.filter_dialog.view.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
+import java.lang.NumberFormatException
+import java.util.*
 import javax.inject.Inject
 
 
@@ -50,6 +56,8 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     private val mapViewModel: MapViewModel by viewModels()
     private var map: GoogleMap? = null
     lateinit var manager : LocationManager
+    val markerList = mutableListOf<Marker>()
+
 
 
     @Inject
@@ -82,6 +90,8 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         mapViewModel.eventsData.observe(viewLifecycleOwner, { result ->
             when (result) {
                 is Resource.Success -> {
+                    Timber.d("${result.data}")
+                    clearMap()
                     result.data?.forEach { elem ->
                         setMarkerOnMap(elem)
                     }
@@ -108,15 +118,23 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         }
     }
 
+    private fun clearMap(){
+        if (markerList.isNotEmpty()){
+            markerList.forEach { it.remove() }
+        }
+    }
     private fun setMarkerOnMap(event: Event) {
+
         val marker: Marker? = map?.addMarker(
             MarkerOptions()
                 .position(LatLng(event.latitude!!, event.longitude!!))
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
                 .title(event.title)
         )
-        marker?.tag = event
-
+        marker?.let {
+            it.tag = event
+            markerList.add(it)
+        }
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
@@ -164,17 +182,87 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
 
     private fun initButtons() {
         fab_location.setOnClickListener {
-            moveCameraToUserLocation()
+            animateCameraToUserLocation()
         }
+        fab_filter.setOnClickListener {
+            initDialog()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun initDialog() {
+        val view = layoutInflater.inflate(R.layout.filter_dialog,null)
+        DialogUtil.buildFilterDialog(requireContext(),view){ _, _ ->
+            if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                    it?.let {
+                        var currentPlayersCount: Int? = null
+                        var allPlayersCount: Int? = null
+                        if (view.current_players_count_filter.text.toString() != ""){
+                            try {
+                                currentPlayersCount =  Integer.parseInt(view.current_players_count_filter.text.toString())
+                            } catch (e: NumberFormatException){
+                                Snackbar.make(requireView(),"Не правильно введено количество игроков", Snackbar.LENGTH_SHORT)
+                            }
+                        }
+                        if (view.all_players_count_filter.text.toString() != ""){
+                            try {
+                                allPlayersCount =  Integer.parseInt(view.all_players_count_filter.text.toString())
+                            } catch (e: NumberFormatException){
+                                Snackbar.make(requireView(),"Не правильно введено количество игроков", Snackbar.LENGTH_SHORT)
+                            }
+                        }
+                        mapViewModel.getFilteredList(
+                            FirebaseAuth.getInstance().uid!!,
+                            LatLng(it.latitude, it.longitude),
+                            view.category_filter.selectedItem as String,
+                            view.date_filter.selectedItem as String,
+                            view.is_need_equip_filter.isChecked,
+                            currentPlayersCount,
+                            allPlayersCount
+                        )
+                    }
+                }
+            } else {
+                buildAlertMessageNoLocationService()
+            }
+        }.show()
+        val categoryAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_spinner_item,
+            Constants.CATEGORY_FILTER_LIST
+        )
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        view.category_filter.adapter = categoryAdapter
+        val dateAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_spinner_item,
+            Constants.DATE_FILTER_LIST
+        )
+        dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        view.date_filter.adapter = dateAdapter
     }
 
 
     @SuppressLint("MissingPermission")
-    private fun moveCameraToUserLocation() {
+    private fun animateCameraToUserLocation() {
         if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                 it?.let {
                     map?.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(it.latitude, it.longitude), MAP_CAMERA_ZOOM
+                        )
+                    )
+                }
+
+            }
+        } else { 
+            buildAlertMessageNoLocationService()
+        }
+
+    }
+    private fun moveCameraToUserLocation() {
+        if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                it?.let {
+                    map?.moveCamera(
                         CameraUpdateFactory.newLatLngZoom(
                             LatLng(it.latitude, it.longitude), MAP_CAMERA_ZOOM
                         )

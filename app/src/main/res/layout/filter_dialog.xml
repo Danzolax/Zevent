@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="@color/main_white_color"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <Spinner
+        android:id="@+id/category_filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/oxygen"
+        android:textColor="@color/main_text_color"
+        android:textSize="22sp" />
+
+    <Spinner
+        android:id="@+id/date_filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/oxygen"
+        android:textColor="@color/main_text_color"
+        android:textSize="22sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/oxygen"
+            android:text="Cпортинвентарь"
+            android:textColor="@color/main_text_color"
+            android:textSize="16sp" />
+
+        <CheckBox
+            android:id="@+id/is_need_equip_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/oxygen"
+            android:text="Количество подписавшихся игроков"
+            android:textColor="@color/main_text_color"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/current_players_count_filter"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:entries="@array/sportTypes"
+            android:fontFamily="@font/oxygen"
+            android:inputType="number"
+            android:maxLength="2"
+            android:textColor="@color/main_text_color"
+            android:textSize="22sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/oxygen"
+            android:text="Сколько нужно игроков"
+            android:textColor="@color/main_text_color"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/all_players_count_filter"
+            android:layout_width="32dp"
+            android:layout_height="wrap_content"
+            android:entries="@array/sportTypes"
+            android:fontFamily="@font/oxygen"
+            android:inputType="number"
+            android:maxLength="2"
+            android:textColor="@color/main_text_color"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+
+</LinearLayout>

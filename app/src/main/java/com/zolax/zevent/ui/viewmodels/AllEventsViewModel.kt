@@ -11,6 +11,7 @@ import com.zolax.zevent.models.Event
 import com.zolax.zevent.repositories.FirebaseRepository
 import com.zolax.zevent.util.Resource
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class AllEventsViewModel @ViewModelInject constructor(
     val firebaseRepository: FirebaseRepository
@@ -25,6 +26,27 @@ class AllEventsViewModel @ViewModelInject constructor(
     @RequiresApi(Build.VERSION_CODES.N)
     fun getAllEventsReverseByUserIdWithRadius(id: String,userLocation: LatLng) = viewModelScope.launch {
         val response = firebaseRepository.getAllEventsReverseByUserIdWithRadius(id,userLocation)
+        eventsData.postValue(response)
+    }
+
+    fun getFilteredList(
+        userId: String,
+        location: LatLng,
+        category: String,
+        date: String,
+        isNeedEquip: Boolean,
+        currentPlayersCount: Int?,
+        allPlayersCount: Int?
+    ) = viewModelScope.launch {
+        val response = firebaseRepository.getFilteredList(
+            userId,
+            location,
+            category,
+            date,
+            isNeedEquip,
+            currentPlayersCount,
+            allPlayersCount
+        )
         eventsData.postValue(response)
     }
 }

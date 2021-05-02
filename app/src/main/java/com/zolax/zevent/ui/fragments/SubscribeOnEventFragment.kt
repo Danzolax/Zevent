@@ -1,6 +1,13 @@
 package com.zolax.zevent.ui.fragments
 
+import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
+import android.provider.Settings
 import android.text.format.DateUtils
 import android.view.Menu
 import android.view.MenuInflater
@@ -12,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
@@ -23,13 +31,19 @@ import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_subscribe_on_event.*
 import java.util.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event) {
     lateinit var event: Event
     val subscribeOnEventViewModel : SubscribeOnEventViewModel by viewModels()
+
+    @Inject
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    lateinit var manager : LocationManager
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        manager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         setHasOptionsMenu(true)
         initUI()
         initSpinners()
@@ -130,6 +144,17 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
         }
     }
 
+    private fun buildAlertMessageNoLocationService() {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        builder.setCancelable(false)
+            .setMessage("Включите GPS для отслеживания вашего местоположения")
+            .setPositiveButton(
+                "Включить"
+            ) { _, _ -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+        val alert: AlertDialog = builder.create()
+        alert.show()
+    }
+
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         (requireActivity() as AppCompatActivity).supportActionBar?.let {
@@ -145,10 +170,21 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
         inflater.inflate(R.menu.appbar_menu, menu)
     }
 
+    @SuppressLint("MissingPermission")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_subscribe -> {
-                subscribeOnEventViewModel.subscribeEventById(event.id!!,createPlayer()!!)
+                if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                        if (it != null){
+                            subscribeOnEventViewModel.subscribeEventById(event.id!!,createPlayer(it)!!)
+                        } else{
+                            Snackbar.make(requireView(), "Нажмите кнопку через пару секунд", Snackbar.LENGTH_SHORT)
+                        }
+                    }
+                } else {
+                    buildAlertMessageNoLocationService()
+                }
                 true
             }
             android.R.id.home -> {
@@ -159,19 +195,23 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
         }
     }
 
-    private fun createPlayer(): Player? {
+    private fun createPlayer(location:Location): Player? {
         return FirebaseAuth.getInstance().currentUser?.uid?.let {
             if (event.category.equals("Другое")){
                 Player(
                     it,
                     "Нет",
-                    rank.selectedItem as String
+                    rank.selectedItem as String,
+                    location.latitude,
+                    location.longitude
                 )
             } else{
                 Player(
                     it,
                     role.selectedItem as String,
-                    rank.selectedItem as String
+                    rank.selectedItem as String,
+                    location.latitude,
+                    location.longitude
                 )
             }
         }
