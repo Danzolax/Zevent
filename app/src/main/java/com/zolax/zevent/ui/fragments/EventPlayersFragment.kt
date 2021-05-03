@@ -50,7 +50,10 @@ class EventPlayersFragment : Fragment(R.layout.fragment_event_players) {
     private fun initAdapter(recyclerView: RecyclerView) {
         val gson = Gson()
         event =  gson.fromJson(requireArguments().getString("event"), Event::class.java)
-        eventPlayersAdapter = EventPlayersAdapter(event.category == "Другое",false)
+        eventPlayersAdapter = EventPlayersAdapter(event.category == "Другое",
+            isShowTelephone = false,
+            isMyEvent = false
+        )
         recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = eventPlayersAdapter

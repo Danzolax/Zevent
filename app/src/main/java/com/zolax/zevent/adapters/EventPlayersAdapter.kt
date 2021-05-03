@@ -1,9 +1,11 @@
 package com.zolax.zevent.adapters
 
 import android.net.Uri
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -19,7 +21,8 @@ import javax.inject.Inject
 
 class EventPlayersAdapter(
     private val isOtherType: Boolean,
-    private val isShowTelephone: Boolean
+    private val isShowTelephone: Boolean,
+    private val isMyEvent: Boolean,
 ) : RecyclerView.Adapter<EventPlayersAdapter.EventPlayersViewHolder>() {
     @Inject
     lateinit var glide: RequestManager
@@ -68,6 +71,20 @@ class EventPlayersAdapter(
             } else{
                 role.text = player.second.role
             }
+            if(isMyEvent){
+                profileAvatar.setOnClickListener {
+                    val bundle =  Bundle()
+                    bundle.putString("userId", player.first.id)
+                    findNavController().navigate(R.id.action_myEventPlayersFragment_to_anotherUserProfileFragment,bundle)
+                }
+            } else{
+                profileAvatar.setOnClickListener {
+                    val bundle =  Bundle()
+                    bundle.putString("userId", player.first.id)
+                    findNavController().navigate(R.id.action_eventPlayersFragment_to_anotherUserProfileFragment,bundle)
+                }
+            }
+
         }
     }
 

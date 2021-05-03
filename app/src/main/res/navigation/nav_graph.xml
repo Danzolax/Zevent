@@ -106,9 +106,21 @@
     <fragment
         android:id="@+id/eventPlayersFragment"
         android:name="com.zolax.zevent.ui.fragments.EventPlayersFragment"
-        android:label="EventPlayersFragment" />
+        android:label="EventPlayersFragment" >
+        <action
+            android:id="@+id/action_eventPlayersFragment_to_anotherUserProfileFragment"
+            app:destination="@id/anotherUserProfileFragment" />
+    </fragment>
     <fragment
         android:id="@+id/myEventPlayersFragment"
         android:name="com.zolax.zevent.ui.fragments.MyEventPlayersFragment"
-        android:label="MyEventPlayersFragment" />
+        android:label="MyEventPlayersFragment" >
+        <action
+            android:id="@+id/action_myEventPlayersFragment_to_anotherUserProfileFragment"
+            app:destination="@id/anotherUserProfileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/anotherUserProfileFragment"
+        android:name="com.zolax.zevent.ui.fragments.AnotherUserProfileFragment"
+        android:label="AnotherUserProfileFragment" />
 </navigation>

@@ -79,7 +79,7 @@ class FirebaseRepository {
         return getUser(auth.uid!!)
     }
 
-    private suspend fun getUser(uid: String): Resource<User> = withContext(Dispatchers.IO) {
+    suspend fun getUser(uid: String): Resource<User> = withContext(Dispatchers.IO) {
         safeCall {
             Resource.Success(
                 users
@@ -121,6 +121,13 @@ class FirebaseRepository {
         safeCall {
             val url = storageRef.child(getCurrentUserId()).downloadUrl.await()
             Resource.Success(url)
+        }
+
+    suspend fun downloadUserImage(id: String) = storageRef.child(id).downloadUrl.await()
+
+    suspend fun downloadUserImageById(id: String) =
+        safeCall {
+            Resource.Success(downloadUserImage(id))
         }
 
 
@@ -313,7 +320,6 @@ class FirebaseRepository {
         Resource.Success(event)
     }
 
-    private suspend fun downloadUserImage(id: String) = storageRef.child(id).downloadUrl.await()
 
 
     suspend fun getPlayersByEventId(id: String) = safeCall {
