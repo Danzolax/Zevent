@@ -91,7 +91,7 @@
                         android:fontFamily="@font/oxygen"
                         android:gravity="end"
                         android:text="4/12"
-                        android:textColor="@color/header_text_color"
+                        android:textColor="@color/bottom_nav_btn_active"
                         android:textSize="18sp" />
                 </LinearLayout>
 

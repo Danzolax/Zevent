@@ -59,7 +59,11 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
                     findNavController().popBackStack()
                 }
                 is Resource.Error ->{
-                    Snackbar.make(requireView(), "Ошибка подписки!", Snackbar.LENGTH_SHORT).show()
+                    if (result.msg == "Роль занята!"){
+                        Snackbar.make(requireView(), "Роль занята, выберите другую", Snackbar.LENGTH_SHORT).show()
+                    } else{
+                        Snackbar.make(requireView(), "Ошибка подписки!", Snackbar.LENGTH_SHORT).show()
+                    }
                 }
             }
         })

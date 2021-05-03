@@ -17,7 +17,8 @@
     <string-array name="basketballRoleTypes">
         <item>Рекомендуемое</item>
         <item>Защитник</item>
-        <item>Нападающий</item>
+        <item>Форвард</item>
+        <item>Центровой</item>
     </string-array>
 
     <string-array name="volleyballRoleTypes">

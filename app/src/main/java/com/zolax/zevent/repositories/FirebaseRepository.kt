@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.lang.RuntimeException
 import java.time.LocalDate
 import java.util.*
 import kotlin.math.atan2
@@ -221,7 +222,66 @@ class FirebaseRepository {
 
     suspend fun subscribeEventById(id: String, player: Player) = safeCall {
         val event = events.document(id).get().await().toObject(Event::class.java)
-        (event?.players as ArrayList).add(player)
+        when (event!!.category) {
+            "Футбол" -> {
+                var count = 0
+                event.players!!.forEach {
+                    if (it.role == player.role) {
+                        count++
+                    }
+                }
+                when (player.role) {
+                    "Нападающий" -> {
+                        if(count >= 3)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Полузащитник" -> {
+                        if(count >= 4)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Защитник" -> {
+                        if(count >= 3)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Вратарь" -> {
+                        if(count >= 1)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                }
+            }
+            "Баскетбол" -> {
+                var count = 0
+                event.players!!.forEach {
+                    if (it.role == player.role) {
+                        count++
+                    }
+                }
+                when (player.role) {
+                    "Форвард" -> {
+                        if(count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Защитник" -> {
+                        if(count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Центровой" -> {
+                        if(count >= 1)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+
+                }
+
+            }
+            "Волейбол" -> {
+                event.players!!.forEach {
+                    if (it.role == player.role) {
+                        return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                }
+            }
+        }
+        (event.players as ArrayList).add(player)
         events.document(id).set(event).await()
         Resource.Success<Unit>()
     }
@@ -281,7 +341,7 @@ class FirebaseRepository {
         allPlayersCount: Int?
     ) = safeCall {
         val response = getAllEventsReverseByUserIdWithRadius(id, location)
-        if (response is Resource.Error){
+        if (response is Resource.Error) {
             return@safeCall response
         }
         var eventList = response.data!!
@@ -290,10 +350,10 @@ class FirebaseRepository {
                 it.category == category
             }
         }
-        if (date != "Не фильтровать"){
+        if (date != "Не фильтровать") {
             val calendar = Calendar.getInstance()
-            when(date){
-                "Сегодня" ->{
+            when (date) {
+                "Сегодня" -> {
                     eventList = eventList.filter {
                         val eventCalendar = Calendar.getInstance()
                         eventCalendar.time = it.eventDateTime!!
@@ -302,7 +362,7 @@ class FirebaseRepository {
                                 (eventCalendar.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH))
                     }
                 }
-                "На этой неделе" ->{
+                "На этой неделе" -> {
                     eventList = eventList.filter {
                         val eventCalendar = Calendar.getInstance()
                         eventCalendar.time = it.eventDateTime!!
@@ -311,7 +371,7 @@ class FirebaseRepository {
                                 (eventCalendar.get(Calendar.WEEK_OF_MONTH) == calendar.get(Calendar.WEEK_OF_MONTH))
                     }
                 }
-                "В этом месяце" ->{
+                "В этом месяце" -> {
                     eventList = eventList.filter {
                         val eventCalendar = Calendar.getInstance()
                         eventCalendar.time = it.eventDateTime!!
@@ -321,14 +381,14 @@ class FirebaseRepository {
                 }
             }
         }
-        if(isNeedEquip){
-            eventList = eventList.filter {it.isNeedEquip}
+        if (isNeedEquip) {
+            eventList = eventList.filter { it.isNeedEquip }
         }
         currentPlayersCount?.let {
-            eventList = eventList.filter { event-> event.players!!.size == currentPlayersCount }
+            eventList = eventList.filter { event -> event.players!!.size == currentPlayersCount }
         }
         allPlayersCount?.let {
-            eventList = eventList.filter { event-> event.playersCount== allPlayersCount }
+            eventList = eventList.filter { event -> event.playersCount == allPlayersCount }
         }
         Resource.Success(eventList)
     }
@@ -342,7 +402,7 @@ class FirebaseRepository {
         allPlayersCount: Int?
     ) = safeCall {
         val response = getAllEventsByUserId(id)
-        if (response is Resource.Error){
+        if (response is Resource.Error) {
             return@safeCall response
         }
         var eventList = response.data!!
@@ -351,10 +411,10 @@ class FirebaseRepository {
                 it.category == category
             }
         }
-        if (date != "Не фильтровать"){
+        if (date != "Не фильтровать") {
             val calendar = Calendar.getInstance()
-            when(date){
-                "Сегодня" ->{
+            when (date) {
+                "Сегодня" -> {
                     eventList = eventList.filter {
                         val eventCalendar = Calendar.getInstance()
                         eventCalendar.time = it.eventDateTime!!
@@ -363,7 +423,7 @@ class FirebaseRepository {
                                 (eventCalendar.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH))
                     }
                 }
-                "На этой неделе" ->{
+                "На этой неделе" -> {
                     eventList = eventList.filter {
                         val eventCalendar = Calendar.getInstance()
                         eventCalendar.time = it.eventDateTime!!
@@ -372,7 +432,7 @@ class FirebaseRepository {
                                 (eventCalendar.get(Calendar.WEEK_OF_MONTH) == calendar.get(Calendar.WEEK_OF_MONTH))
                     }
                 }
-                "В этом месяце" ->{
+                "В этом месяце" -> {
                     eventList = eventList.filter {
                         val eventCalendar = Calendar.getInstance()
                         eventCalendar.time = it.eventDateTime!!
@@ -382,14 +442,14 @@ class FirebaseRepository {
                 }
             }
         }
-        if(isNeedEquip){
-            eventList = eventList.filter {it.isNeedEquip}
+        if (isNeedEquip) {
+            eventList = eventList.filter { it.isNeedEquip }
         }
         currentPlayersCount?.let {
-            eventList = eventList.filter { event-> event.players!!.size == currentPlayersCount }
+            eventList = eventList.filter { event -> event.players!!.size == currentPlayersCount }
         }
         allPlayersCount?.let {
-            eventList = eventList.filter { event-> event.playersCount== allPlayersCount }
+            eventList = eventList.filter { event -> event.playersCount == allPlayersCount }
         }
         Resource.Success(eventList)
     }

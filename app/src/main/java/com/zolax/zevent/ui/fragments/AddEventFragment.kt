@@ -58,26 +58,34 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
     }
 
     private fun createEvent( location: Location): Event? {
-        if (players_count.text.toString() != "" && createPlayer(location) != null) {
-            val event = Event()
-            event.title = title.text.toString()
-            event.category = types.selectedItem as String
-            event.playersCount = Integer.parseInt(players_count.text.toString())
-            event.eventDateTime = needDatetime.time
-            event.isNeedEquip = is_need_equip.isChecked
-            event.needEquip = equip.text.toString()
-            event.players = arrayListOf(createPlayer(location)!!)
-            val latitude: Double = requireArguments().getDouble("latitude")
-            val longitude: Double = requireArguments().getDouble("longitude")
-            event.latitude = latitude
-            event.longitude = longitude
-            return event
-        } else {
+        if ((players_count.text.toString() == "") or ( createPlayer(location) == null)) {
             Snackbar.make(requireView(), "Введите количество игроков!", Snackbar.LENGTH_SHORT)
                 .show()
             return null
         }
-
+        if (needDatetime.timeInMillis < Calendar.getInstance().timeInMillis){
+            Snackbar.make(requireView(), "Время начала мероприятия должно быть больше, чем текущее!", Snackbar.LENGTH_SHORT)
+                .show()
+            return null
+        }
+        if ((title.text.toString() == "") or (title.text.toString().length > 30)){
+            Snackbar.make(requireView(), "Введите название мероприятия не более 30 символов!", Snackbar.LENGTH_SHORT)
+                .show()
+            return null
+        }
+        val event = Event()
+        event.title = title.text.toString()
+        event.category = types.selectedItem as String
+        event.playersCount = Integer.parseInt(players_count.text.toString())
+        event.eventDateTime = needDatetime.time
+        event.isNeedEquip = is_need_equip.isChecked
+        event.needEquip = equip.text.toString()
+        event.players = arrayListOf(createPlayer(location)!!)
+        val latitude: Double = requireArguments().getDouble("latitude")
+        val longitude: Double = requireArguments().getDouble("longitude")
+        event.latitude = latitude
+        event.longitude = longitude
+        return event
     }
 
     private fun createPlayer(location: Location): Player? {
