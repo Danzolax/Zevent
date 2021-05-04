@@ -81,6 +81,7 @@
             android:id="@+id/moreButton"
             android:layout_width="86dp"
             android:layout_height="53dp"
+            android:layout_marginTop="8dp"
             android:src="@drawable/ic_my_event_more"
             android:background="@drawable/event_subscribe_btn_background"
             app:layout_constraintEnd_toEndOf="parent"

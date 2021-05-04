@@ -1,6 +1,7 @@
 package com.zolax.zevent.ui.viewmodels
 
 import android.net.Uri
+import android.telephony.PhoneNumberUtils
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 
@@ -73,9 +74,7 @@ class AuthorisationViewModel @ViewModelInject constructor(
             this.name = name
             this.prefers = prefers
             this.distanceToSearchEvents = 5
-            try {
-                telephoneNumber.toInt()
-            }catch (error: NumberFormatException){
+            if(!android.util.Patterns.PHONE.matcher(telephoneNumber).matches()){
                 signUpData.postValue(Resource.Error(msg = "Некорректный номер телефона"))
                 return@launch
             }

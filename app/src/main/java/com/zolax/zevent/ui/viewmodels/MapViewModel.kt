@@ -53,4 +53,9 @@ class MapViewModel @ViewModelInject constructor(
         Timber.d("${response.data}")
         eventsData.postValue(response)
     }
+
+
+    fun moveEventsToBeginByUserID(id: String) = viewModelScope.launch {
+        firebaseRepository.moveEventsToBeginByUserID(id)
+    }
 }

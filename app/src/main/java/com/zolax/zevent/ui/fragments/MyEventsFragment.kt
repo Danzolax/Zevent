@@ -45,7 +45,6 @@ class MyEventsFragment : Fragment(R.layout.fragment_my_events) {
         myEventsViewModel.eventsData.observe(viewLifecycleOwner, { events ->
             when (events) {
                 is Resource.Success -> {
-                    Timber.d("Load: ${events.data}")
                     myEventsAdapter.events = events.data!!
                 }
                 is Resource.Error -> {

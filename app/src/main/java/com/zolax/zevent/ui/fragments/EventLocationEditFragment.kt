@@ -114,6 +114,11 @@ class EventLocationEditFragment : Fragment(R.layout.fragment_event_location_edit
         )
     }
     private fun setRecMarkerOnMap(location: LatLng,title: String): Marker? {
+        map?.animateCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                location, Constants.MAP_CAMERA_ZOOM
+            )
+        )
         return map?.addMarker(
             MarkerOptions()
                 .position(location)

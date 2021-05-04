@@ -64,7 +64,6 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     @SuppressLint("MissingPermission")
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requestPermission()
@@ -84,6 +83,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         } else {
             buildAlertMessageNoLocationService()
         }
+        mapViewModel.moveEventsToBeginByUserID( FirebaseAuth.getInstance().uid!!)
     }
 
     private fun subscribeObservers() {
@@ -258,6 +258,8 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         }
 
     }
+
+    @SuppressLint("MissingPermission")
     private fun moveCameraToUserLocation() {
         if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {

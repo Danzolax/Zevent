@@ -31,6 +31,7 @@ class FirebaseRepository {
     private val storageRef = storage.reference
     private val users = Firebase.firestore.collection("users")
     private val events = Firebase.firestore.collection("events")
+    private val beginEvents = Firebase.firestore.collection("beginEvents")
 
     private inline fun <T> safeCall(action: () -> Resource<T>): Resource<T> {
         return try {
@@ -125,6 +126,8 @@ class FirebaseRepository {
 
     suspend fun downloadUserImage(id: String) = storageRef.child(id).downloadUrl.await()
 
+
+    //Возвращает uri фотографии пользователя
     suspend fun downloadUserImageById(id: String) =
         safeCall {
             Resource.Success(downloadUserImage(id))
@@ -143,7 +146,7 @@ class FirebaseRepository {
         Timber.d("events: $events")
         Resource.Success(events)
     }
-
+    //Возвращает список мероприятий конкретного пользовател
     @RequiresApi(Build.VERSION_CODES.N)
     suspend fun getAllEventsByUserId(id: String) = safeCall {
         val events = events.get().await().toObjects(Event::class.java)
@@ -164,6 +167,7 @@ class FirebaseRepository {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
+    //Возвращает список мероприятий всех пользователей кроме текушего
     suspend fun getAllEventsReverseByUserId(id: String) = safeCall {
         val events = events.get().await().toObjects(Event::class.java)
         Timber.d("load all events by $id")
@@ -184,7 +188,7 @@ class FirebaseRepository {
         Timber.d("$events")
         Resource.Success(events)
     }
-
+    //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км,
     suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng) = safeCall {
         val events = events.get().await().toObjects(Event::class.java)
         Timber.d("load all events by $id")
@@ -213,7 +217,7 @@ class FirebaseRepository {
         Timber.d("$events")
         Resource.Success(events)
     }
-
+    //Возвращает Расстояние между двумя точками в метрах
     private fun distance(lat_a: Double, lng_a: Double, lat_b: Double, lng_b: Double): Double {
         val earthRadius = 3958.75
         val latDiff = Math.toRadians((lat_b - lat_a))
@@ -239,19 +243,19 @@ class FirebaseRepository {
                 }
                 when (player.role) {
                     "Нападающий" -> {
-                        if(count >= 3)
+                        if (count >= 3)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Полузащитник" -> {
-                        if(count >= 4)
+                        if (count >= 4)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Защитник" -> {
-                        if(count >= 3)
+                        if (count >= 3)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Вратарь" -> {
-                        if(count >= 1)
+                        if (count >= 1)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                 }
@@ -265,15 +269,15 @@ class FirebaseRepository {
                 }
                 when (player.role) {
                     "Форвард" -> {
-                        if(count >= 2)
+                        if (count >= 2)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Защитник" -> {
-                        if(count >= 2)
+                        if (count >= 2)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Центровой" -> {
-                        if(count >= 1)
+                        if (count >= 1)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
 
@@ -320,8 +324,7 @@ class FirebaseRepository {
         Resource.Success(event)
     }
 
-
-
+    //Возвращает список из (Пользователь,Игрок,фото)
     suspend fun getPlayersByEventId(id: String) = safeCall {
         val players: ArrayList<Triple<User, Player, Uri>> = arrayListOf()
         val event = events.document(id).get().await().toObject(Event::class.java)
@@ -337,6 +340,7 @@ class FirebaseRepository {
         Resource.Success(players)
     }
 
+    //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км, в соответствии с фильтрами
     suspend fun getFilteredList(
         id: String,
         location: LatLng,
@@ -399,6 +403,7 @@ class FirebaseRepository {
         Resource.Success(eventList)
     }
 
+    //Возвращает список мероприятий конкретного пользователя, в соответствии с фильтрами
     suspend fun getFilteredListByUserId(
         id: String,
         category: String,
@@ -459,4 +464,42 @@ class FirebaseRepository {
         }
         Resource.Success(eventList)
     }
+    //Перемещение мероприяти, которые начались в другой список
+    suspend fun moveEventsToBeginByUserID(id: String) {
+        val eventsList = getAllEventsReverseByUserId(id).data
+        eventsList!!.forEach {
+            if (it.eventDateTime!!.time < Calendar.getInstance().timeInMillis) {
+                events.document(it.id!!).delete().await()
+                beginEvents.add(it).await()
+            }
+        }
+    }
+
+    suspend fun getAllBeginEventsByUserId(id: String) = safeCall {
+        val events = beginEvents.get().await().toObjects(Event::class.java)
+        events.removeIf {
+            var flag = false
+            it.players?.forEach { elem ->
+                if (elem.userId.equals(id)) {
+                    flag = true
+                    return@forEach
+                }
+            }
+            return@removeIf !flag
+        }
+        Resource.Success(events)
+    }
+
+    suspend fun getBeginEventById(id: String) = safeCall {
+        val event = beginEvents.document(id).get().await().toObject(Event::class.java)
+        Resource.Success(event)
+    }
+
+    suspend fun unsubscribeBeginEventById(id: String, player: Player) = safeCall {
+        val event = beginEvents.document(id).get().await().toObject(Event::class.java)
+        (event?.players as ArrayList).remove(player)
+        beginEvents.document(id).set(event).await()
+        Resource.Success<Unit>()
+    }
+
 }
