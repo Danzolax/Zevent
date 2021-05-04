@@ -35,6 +35,7 @@ class MyEventsFragment : Fragment(R.layout.fragment_my_events) {
         super.onViewCreated(view, savedInstanceState)
         initAdapter(recycler_view)
         subscribeObservers()
+        myEventsViewModel.moveEventsToBeginByUserID(FirebaseAuth.getInstance().uid!!)
         myEventsViewModel.getAllEventsByUserId(FirebaseAuth.getInstance().uid!!)
         initButtons()
     }

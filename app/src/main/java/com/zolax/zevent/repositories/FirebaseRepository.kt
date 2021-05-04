@@ -466,11 +466,11 @@ class FirebaseRepository {
     }
     //Перемещение мероприяти, которые начались в другой список
     suspend fun moveEventsToBeginByUserID(id: String) {
-        val eventsList = getAllEventsReverseByUserId(id).data
+        val eventsList = getAllEventsByUserId(id).data
         eventsList!!.forEach {
             if (it.eventDateTime!!.time < Calendar.getInstance().timeInMillis) {
                 events.document(it.id!!).delete().await()
-                beginEvents.add(it).await()
+                beginEvents.document(it.id!!).set(it).await()
             }
         }
     }

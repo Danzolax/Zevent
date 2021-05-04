@@ -34,4 +34,8 @@ class MyEventsViewModel @ViewModelInject constructor(
         val response = firebaseRepository.getFilteredListByUserId(id, category, date, isNeedEquip, currentPlayersCount, allPlayersCount)
         eventsData.postValue(response)
     }
+
+    fun moveEventsToBeginByUserID(id: String) = viewModelScope.launch {
+        firebaseRepository.moveEventsToBeginByUserID(id)
+    }
 }
