@@ -52,7 +52,7 @@ class EventPlayersFragment : Fragment(R.layout.fragment_event_players) {
         event =  gson.fromJson(requireArguments().getString("event"), Event::class.java)
         eventPlayersAdapter = EventPlayersAdapter(event.category == "Другое",
             isShowTelephone = false,
-            isMyEvent = false
+            R.id.action_eventPlayersFragment_to_anotherUserProfileFragment
         )
         recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

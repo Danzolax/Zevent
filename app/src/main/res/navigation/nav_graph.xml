@@ -127,10 +127,18 @@
         android:name="com.zolax.zevent.ui.fragments.BeginEventMoreFragment"
         android:label="BeginEventMoreFragment" >
         <action
-            android:id="@+id/action_beginEventMoreFragment_to_myEventPlayersFragment"
-            app:destination="@id/myEventPlayersFragment" />
-        <action
             android:id="@+id/action_beginEventMoreFragment_to_simpleMapViewerFragment"
             app:destination="@id/simpleMapViewerFragment" />
+        <action
+            android:id="@+id/action_beginEventMoreFragment_to_beginEventPlayersFragment"
+            app:destination="@id/beginEventPlayersFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/beginEventPlayersFragment"
+        android:name="com.zolax.zevent.ui.fragments.BeginEventPlayersFragment"
+        android:label="BeginEventPlayersFragment" >
+        <action
+            android:id="@+id/action_beginEventPlayersFragment_to_anotherUserProfileFragment"
+            app:destination="@id/anotherUserProfileFragment" />
     </fragment>
 </navigation>

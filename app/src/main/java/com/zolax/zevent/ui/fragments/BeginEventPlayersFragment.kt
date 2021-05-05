@@ -16,14 +16,14 @@ import com.google.gson.Gson
 import com.zolax.zevent.R
 import com.zolax.zevent.adapters.EventPlayersAdapter
 import com.zolax.zevent.models.Event
-import com.zolax.zevent.ui.viewmodels.MyEventPlayersViewModel
+import com.zolax.zevent.ui.viewmodels.BeginEventPlayersViewModel
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_event_players.*
 
 @AndroidEntryPoint
-class MyEventPlayersFragment : Fragment(R.layout.fragment_event_players) {
-    private val myEventPlayersViewModel : MyEventPlayersViewModel by viewModels()
+class BeginEventPlayersFragment : Fragment(R.layout.fragment_event_players) {
+    private val beginEventPlayersViewModel : BeginEventPlayersViewModel by viewModels()
     private lateinit var eventPlayersAdapter:EventPlayersAdapter
     private lateinit var event: Event
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -31,11 +31,11 @@ class MyEventPlayersFragment : Fragment(R.layout.fragment_event_players) {
         setHasOptionsMenu(true)
         initAdapter(recycler_view)
         subscribeObservers()
-        myEventPlayersViewModel.getPlayersByEventId(event.id!!)
+        beginEventPlayersViewModel.getPlayersByEventId(event.id!!)
     }
 
     private fun subscribeObservers() {
-        myEventPlayersViewModel.players.observe(viewLifecycleOwner,{ result ->
+        beginEventPlayersViewModel.players.observe(viewLifecycleOwner,{ result ->
             when(result){
                 is Resource.Success ->{
                     eventPlayersAdapter.players = result.data!!
@@ -50,8 +50,8 @@ class MyEventPlayersFragment : Fragment(R.layout.fragment_event_players) {
     private fun initAdapter(recyclerView: RecyclerView) {
         val gson = Gson()
         event =  gson.fromJson(requireArguments().getString("event"), Event::class.java)
-        eventPlayersAdapter = EventPlayersAdapter(event.category == "Другое", true,
-            R.id.action_myEventPlayersFragment_to_anotherUserProfileFragment
+        eventPlayersAdapter = EventPlayersAdapter(event.category == "Другое",true,
+            R.id.action_beginEventPlayersFragment_to_anotherUserProfileFragment
         )
         recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

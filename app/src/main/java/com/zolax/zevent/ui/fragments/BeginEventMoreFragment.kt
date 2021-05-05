@@ -71,7 +71,9 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
     }
 
     private fun initUI() {
-
+        if (event.players?.get(0)?.userId == FirebaseAuth.getInstance().uid){
+            end_event_button.visibility = View.VISIBLE
+        }
         title.text = event.title
         type.text = event.category
         players_count.text = "${event.players?.size}/${event.playersCount}"
@@ -109,7 +111,7 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
             val bundle = Bundle()
             val gson = Gson()
             bundle.putString("event",gson.toJson(event))
-            findNavController().navigate(R.id.action_beginEventMoreFragment_to_myEventPlayersFragment,bundle)
+            findNavController().navigate(R.id.action_beginEventMoreFragment_to_beginEventPlayersFragment,bundle)
         }
     }
 

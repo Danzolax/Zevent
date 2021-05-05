@@ -339,6 +339,20 @@ class FirebaseRepository {
         }
         Resource.Success(players)
     }
+    suspend fun getBeginEventPlayersByEventId(id: String) = safeCall {
+        val players: ArrayList<Triple<User, Player, Uri>> = arrayListOf()
+        val event = beginEvents.document(id).get().await().toObject(Event::class.java)
+        event!!.players!!.forEach { player ->
+            players.add(
+                Triple(
+                    getUser(player.userId!!).data!!,
+                    player,
+                    downloadUserImage(player.userId!!),
+                )
+            )
+        }
+        Resource.Success(players)
+    }
 
     //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км, в соответствии с фильтрами
     suspend fun getFilteredList(
