@@ -15,6 +15,7 @@ class BeginEventMoreViewModel @ViewModelInject constructor(
     val repository: FirebaseRepository
 ) : ViewModel() {
     val isSuccessUnsubscribe = MutableLiveData<Resource<Unit>>()
+    val isSuccessDelete = MutableLiveData<Resource<Unit>>()
     val currentEvent = MutableLiveData<Resource<Event>>()
 
     fun unsubscribeBeginEventById(id: String, player: Player) = viewModelScope.launch {
@@ -29,5 +30,9 @@ class BeginEventMoreViewModel @ViewModelInject constructor(
         response.let {
             currentEvent.postValue(it)
         }
+    }
+    fun addPlayersInVotingsAndDeleteBeginEvent(beginEventId: String, userId: String) = viewModelScope.launch {
+       val response =  repository.addPlayersInVotingsAndDeleteBeginEvent(beginEventId,userId)
+        isSuccessDelete.postValue(response)
     }
 }

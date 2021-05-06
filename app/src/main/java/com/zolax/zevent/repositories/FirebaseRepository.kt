@@ -9,9 +9,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
-import com.zolax.zevent.models.Event
-import com.zolax.zevent.models.Player
-import com.zolax.zevent.models.User
+import com.zolax.zevent.models.*
 import com.zolax.zevent.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -32,6 +30,7 @@ class FirebaseRepository {
     private val users = Firebase.firestore.collection("users")
     private val events = Firebase.firestore.collection("events")
     private val beginEvents = Firebase.firestore.collection("beginEvents")
+    private val votings = Firebase.firestore.collection("votings")
 
     private inline fun <T> safeCall(action: () -> Resource<T>): Resource<T> {
         return try {
@@ -146,6 +145,7 @@ class FirebaseRepository {
         Timber.d("events: $events")
         Resource.Success(events)
     }
+
     //Возвращает список мероприятий конкретного пользовател
     @RequiresApi(Build.VERSION_CODES.N)
     suspend fun getAllEventsByUserId(id: String) = safeCall {
@@ -188,6 +188,7 @@ class FirebaseRepository {
         Timber.d("$events")
         Resource.Success(events)
     }
+
     //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км,
     suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng) = safeCall {
         val events = events.get().await().toObjects(Event::class.java)
@@ -217,6 +218,7 @@ class FirebaseRepository {
         Timber.d("$events")
         Resource.Success(events)
     }
+
     //Возвращает Расстояние между двумя точками в метрах
     private fun distance(lat_a: Double, lng_a: Double, lat_b: Double, lng_b: Double): Double {
         val earthRadius = 3958.75
@@ -339,6 +341,7 @@ class FirebaseRepository {
         }
         Resource.Success(players)
     }
+
     suspend fun getBeginEventPlayersByEventId(id: String) = safeCall {
         val players: ArrayList<Triple<User, Player, Uri>> = arrayListOf()
         val event = beginEvents.document(id).get().await().toObject(Event::class.java)
@@ -478,6 +481,7 @@ class FirebaseRepository {
         }
         Resource.Success(eventList)
     }
+
     //Перемещение мероприяти, которые начались в другой список
     suspend fun moveEventsToBeginByUserID(id: String) {
         val eventsList = getAllEventsByUserId(id).data
@@ -515,5 +519,30 @@ class FirebaseRepository {
         beginEvents.document(id).set(event).await()
         Resource.Success<Unit>()
     }
+
+    suspend fun addPlayersInVotingsAndDeleteBeginEvent(beginEventId: String,userId: String) = safeCall {
+        Timber.d("begin add votings")
+        val event = beginEvents.document(beginEventId).get().await().toObject(Event::class.java)
+        Timber.d("event $event")
+        val voting = votings.whereEqualTo("userId",userId).get().await().toObjects(Votings::class.java)[0]
+        Timber.d("votingsElem $voting")
+        event!!.players!!.forEach { player1 ->
+            event.players!!.forEach { player2 ->
+                if ((player1.userId != player2.userId) or (player2.userId != getCurrentUserId())) {
+                    if (voting.votings == null){
+                        voting.votings = mutableListOf()
+                    }
+                    voting.votings!!.add(Voting(eventTitle = event.title,event.category,player2))
+                }
+            }
+        }
+        Timber.d("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        Timber.d("votingsElem $voting")
+        votings.document(voting.id!!).set(voting).await()
+        beginEvents.document(beginEventId).delete().await()
+        Resource.Success<Unit>()
+    }
+
+
 
 }

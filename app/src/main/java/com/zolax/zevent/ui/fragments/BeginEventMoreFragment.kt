@@ -51,6 +51,18 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
             }
         })
 
+        beginEventMoreViewModel.isSuccessDelete.observe(viewLifecycleOwner,{ result ->
+            when(result){
+                is Resource.Success ->{
+                    Snackbar.make(requireView(),"Вы успешно завершили мероприятие", Snackbar.LENGTH_SHORT)
+                    findNavController().popBackStack()
+                }
+                is Resource.Error ->{
+                    Snackbar.make(requireView(),"Ошибка завершения мероприятия, попробуйте позже", Snackbar.LENGTH_SHORT)
+                }
+            }
+        })
+
         beginEventMoreViewModel.currentEvent.observe(viewLifecycleOwner,{ result ->
             when(result){
                 is Resource.Success ->{
@@ -112,6 +124,9 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
             val gson = Gson()
             bundle.putString("event",gson.toJson(event))
             findNavController().navigate(R.id.action_beginEventMoreFragment_to_beginEventPlayersFragment,bundle)
+        }
+        end_event_button.setOnClickListener {
+            beginEventMoreViewModel.addPlayersInVotingsAndDeleteBeginEvent(event.id!!, FirebaseAuth.getInstance().uid!!)
         }
     }
 
