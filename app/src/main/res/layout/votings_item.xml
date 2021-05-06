@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/main_white_color"
+    android:layout_margin="16dp"
+    app:cardElevation="8dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="@dimen/corner_radius">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:layout_gravity="center">
+
+        <TextView
+            android:id="@+id/eventTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="Футбольчик с золахом"
+            android:textColor="@color/header2_text_color"
+            android:fontFamily="@font/oxygen"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/eventType"
+            android:layout_width="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/eventTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline"
+            android:text="Футбол"
+            android:textColor="@color/event_item_text_color"
+            android:fontFamily="@font/oxygen"
+            android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/eventPlayersCount"
+            android:layout_width="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/eventType"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline"
+            android:text="Количество игроков - 4/12"
+            android:textColor="@color/event_item_text_color"
+            android:fontFamily="@font/oxygen"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/event_date"
+            android:layout_width="0dp"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/eventPlayersCount"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline"
+            android:text="Дата и время - 15.02.2021 13:00"
+            android:textColor="@color/event_item_text_color"
+            android:fontFamily="@font/oxygen"
+            android:textSize="14sp"/>
+
+
+        <ImageButton
+            android:id="@+id/mapButton"
+            android:background="@drawable/event_map_btn_background"
+            android:src="@drawable/ic_map_36"
+            android:elevation="8dp"
+            android:layout_width="86dp"
+            android:layout_height="36dp"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/moreButton"
+            />
+
+        <ImageButton
+            android:id="@+id/moreButton"
+            android:layout_width="86dp"
+            android:layout_height="53dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_my_event_more"
+            android:background="@drawable/event_subscribe_btn_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/guideline"
+            app:layout_constraintTop_toBottomOf="@id/mapButton"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.6"/>
+
+
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.cardview.widget.CardView>

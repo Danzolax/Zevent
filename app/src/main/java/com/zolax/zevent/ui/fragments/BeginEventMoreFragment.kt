@@ -159,11 +159,8 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
             it.setHomeButtonEnabled(true)
             it.setDisplayHomeAsUpEnabled(true)
         }
-        if (event.players?.get(0)?.userId == FirebaseAuth.getInstance().uid){
-
-        }else{
+        if (event.players?.get(0)?.userId != FirebaseAuth.getInstance().uid){
             menu.findItem(R.id.action_unsubscribe).isVisible = true
-
         }
 
     }

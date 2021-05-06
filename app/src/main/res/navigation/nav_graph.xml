@@ -29,6 +29,9 @@
         <action
             android:id="@+id/action_eventsFragment_to_beginEventMoreFragment"
             app:destination="@id/beginEventMoreFragment" />
+        <action
+            android:id="@+id/action_eventsFragment_to_votingsFragment"
+            app:destination="@id/votingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/mapFragment"
@@ -141,4 +144,8 @@
             android:id="@+id/action_beginEventPlayersFragment_to_anotherUserProfileFragment"
             app:destination="@id/anotherUserProfileFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/votingsFragment"
+        android:name="com.zolax.zevent.ui.fragments.VotingsFragment"
+        android:label="VotingsFragment" />
 </navigation>

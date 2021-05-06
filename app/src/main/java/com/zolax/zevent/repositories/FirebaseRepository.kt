@@ -550,6 +550,14 @@ class FirebaseRepository {
         votings.add(Votings(userId = userId,votings = mutableListOf())).await()
     }
 
+    suspend fun checkVotingCount(userId: String) = safeCall {
+        val voting = votings.whereEqualTo("userId",userId).get().await().toObjects(Votings::class.java)[0]
+        if (voting.votings!!.size > 0){
+            return@safeCall  Resource.Success(true)
+        }
+        return@safeCall  Resource.Success(false)
+    }
+
 
 
 }
