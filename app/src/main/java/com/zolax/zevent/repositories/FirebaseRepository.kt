@@ -15,8 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.lang.RuntimeException
-import java.time.LocalDate
 import java.util.*
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -31,6 +29,7 @@ class FirebaseRepository {
     private val events = Firebase.firestore.collection("events")
     private val beginEvents = Firebase.firestore.collection("beginEvents")
     private val votings = Firebase.firestore.collection("votings")
+    private val scores = Firebase.firestore.collection("scores")
 
     private inline fun <T> safeCall(action: () -> Resource<T>): Resource<T> {
         return try {
@@ -53,6 +52,7 @@ class FirebaseRepository {
                 users.document(firebaseUser!!.uid).set(user).await()
                 storageRef.child(firebaseUser.uid).putFile(uri).await()
                 createVoting(firebaseUser.uid)
+                createScore(firebaseUser.uid)
                 Resource.Success<Unit>()
             }
         }
@@ -521,43 +521,110 @@ class FirebaseRepository {
         Resource.Success<Unit>()
     }
 
-    suspend fun addPlayersInVotingsAndDeleteBeginEvent(beginEventId: String,userId: String) = safeCall {
-        val event = beginEvents.document(beginEventId).get().await().toObject(Event::class.java)
+    suspend fun addPlayersInVotingsAndDeleteBeginEvent(beginEventId: String, userId: String) =
+        safeCall {
+            val event = beginEvents.document(beginEventId).get().await().toObject(Event::class.java)
 
-        event!!.players!!.forEach { player1 ->
-            event.players!!.forEach { player2 ->
-                if (player1.userId != player2.userId) {
-                    val voting = votings.whereEqualTo("userId",player1.userId).get().await().toObjects(Votings::class.java)[0]
-                    if (voting.votings == null){
-                        voting.votings = mutableListOf()
+            event!!.players!!.forEach { player1 ->
+                event.players!!.forEach { player2 ->
+                    if (player1.userId != player2.userId) {
+                        val voting = votings.whereEqualTo("userId", player1.userId).get().await()
+                            .toObjects(Votings::class.java)[0]
+                        if (voting.votings == null) {
+                            voting.votings = mutableListOf()
+                        }
+                        voting.votings!!.add(
+                            Voting(
+                                eventTitle = event.title,
+                                event.category,
+                                getUser(player2.userId!!).data!!.name,
+                                player2
+                            )
+                        )
+                        votings.document(voting.id!!).set(voting).await()
                     }
-                    voting.votings!!.add(Voting(eventTitle = event.title,event.category,getUser(player2.userId!!).data!!.name,player2))
-                    votings.document(voting.id!!).set(voting).await()
                 }
             }
+
+            beginEvents.document(beginEventId).delete().await()
+            Resource.Success<Unit>()
         }
 
-        beginEvents.document(beginEventId).delete().await()
-        Resource.Success<Unit>()
-    }
-
-    suspend fun createVoting(userId: String){
-        votings.add(Votings(userId = userId,votings = mutableListOf())).await()
+    suspend fun createVoting(userId: String) {
+        votings.add(Votings(userId = userId, votings = mutableListOf())).await()
     }
 
     suspend fun checkVotingCount(userId: String) = safeCall {
-        val voting = votings.whereEqualTo("userId",userId).get().await().toObjects(Votings::class.java)[0]
-        if (voting.votings!!.size > 0){
-            return@safeCall  Resource.Success(true)
+        val voting =
+            votings.whereEqualTo("userId", userId).get().await().toObjects(Votings::class.java)[0]
+        if (voting.votings!!.size > 0) {
+            return@safeCall Resource.Success(true)
         }
-        return@safeCall  Resource.Success(false)
+        return@safeCall Resource.Success(false)
     }
 
     suspend fun getVotings(userId: String) = safeCall {
-        val voting = votings.whereEqualTo("userId",userId).get().await().toObjects(Votings::class.java)[0]
+        val voting =
+            votings.whereEqualTo("userId", userId).get().await().toObjects(Votings::class.java)[0]
         Resource.Success(voting)
     }
 
+    suspend fun createScore(userId: String) {
+        val footballScore = Score(userId = userId, sportType = Score.FOOTBALL)
+        footballScore.scores = mutableMapOf(
+            Pair("Нападающий", 0),
+            Pair("Полузащитник", 0),
+            Pair("Защитник", 0),
+            Pair("Вратарь", 0)
+        )
+        val basketballScore = Score(userId = userId, sportType = Score.BASKETBALL)
+        basketballScore.scores = mutableMapOf(
+            Pair("Защитник", 0),
+            Pair("Форвард", 0),
+            Pair("Центровой", 0)
+        )
+        val volleybalScore = Score(userId = userId, sportType = Score.VOLLEYBALL)
+        volleybalScore.scores = mutableMapOf(
+            Pair("Либеро", 0),
+            Pair("Диагональный", 0),
+            Pair("Доигровщик", 0),
+            Pair("Центральный блокирующий", 0),
+            Pair("Связующий", 0),
+            Pair("Подающий", 0)
+        )
+        scores.add(footballScore).await()
+        scores.add(basketballScore).await()
+        scores.add(volleybalScore).await()
+    }
+
+    suspend fun addScore(
+        anUserId: String,
+        category: String,
+        role: String,
+        votingPosition: Int,
+        votingsId: String
+    ) = safeCall {
+        val scoreList =
+            scores.whereEqualTo("userId", anUserId).get().await().toObjects(Score::class.java)
+        var score = Score()
+        scoreList.forEach {
+            if (it.sportType == category) {
+                score = it
+                return@forEach
+            }
+        }
+        score.scores!![role] = score.scores!![role]!! + 1
+        scores.document(score.id!!).set(score)
+
+        val votingList = votings.document(votingsId).get().await().toObject(Votings::class.java)
+        votingList!!.votings!!.removeAt(votingPosition)
+        votings.document(votingsId).set(votingList).await()
+        Resource.Success<Unit>()
+    }
+
+    suspend fun removeScore(userId: String, category: String, role: String) = safeCall {
+        Resource.Success<Unit>()
+    }
 
 
 }

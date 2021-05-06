@@ -60,8 +60,6 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
                         .makeText(requireContext(), "Ошибка сохранения данных", Toast.LENGTH_SHORT)
                         .show()
                 }
-
-
                 is Resource.Success -> {
                     progressBar.isVisible = false
                     findNavController().popBackStack()

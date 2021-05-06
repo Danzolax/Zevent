@@ -1,24 +1,25 @@
 package com.zolax.zevent.adapters
 
-import android.content.Context
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 import com.zolax.zevent.R
 import com.zolax.zevent.models.Voting
+import com.zolax.zevent.ui.viewmodels.VotingsViewModel
 import kotlinx.android.synthetic.main.votings_item.view.*
-import java.util.*
 
 
 class VotingsAdapter(
-    val positiveClickListener : View.OnClickListener,
-    val negativeClickListener : View.OnClickListener
+    val votingsViewModel: VotingsViewModel
 ) : RecyclerView.Adapter<VotingsAdapter.VotingsViewHolder>() {
+
+    lateinit var votingsId: String
+
+
 
     inner class VotingsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
@@ -55,10 +56,19 @@ class VotingsAdapter(
             event_category.text = voting.eventCategory
             player_name.text = voting.userName
             player_role.text = voting.player!!.role
-            positive_button.setOnClickListener(positiveClickListener)
-            negative_button.setOnClickListener(negativeClickListener)
+            positive_button.setOnClickListener{
+                votingsViewModel.addScore(
+                    voting.player!!.userId!!,
+                    voting.eventCategory!!,
+                    voting.player!!.role!!,
+                    position,
+                    votingsId
+                )
+            }
+
         }
     }
+
 
 
 

@@ -30,6 +30,7 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
     private val votingsViewModel: VotingsViewModel by viewModels()
     private lateinit var votingsAdapter: VotingsAdapter
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         progressBar.isVisible = false
@@ -39,8 +40,9 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
         votingsViewModel.getVotings(FirebaseAuth.getInstance().uid!!)
     }
 
+
     private fun initAdapter(recyclerView: RecyclerView) {
-        votingsAdapter = VotingsAdapter({},{})
+        votingsAdapter = VotingsAdapter(votingsViewModel)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = votingsAdapter
@@ -52,13 +54,33 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
             when(result){
                 is Resource.Success ->{
                     progressBar.isVisible = false
-                    votingsAdapter.votings = result.data!!.votings!!
+                    votingsAdapter.votingsId = result.data!!.id!!
+                    votingsAdapter.votings = result.data.votings!!
                 }
                 is Resource.Error ->{
                     progressBar.isVisible = false
                     Snackbar.make(
                         requireView(),
                         "Ошибка загрузки списка голосований",
+                        Snackbar.LENGTH_SHORT
+                    )
+                }
+                is Resource.Loading ->{
+                    progressBar.isVisible = true
+                }
+            }
+        })
+        votingsViewModel.isSuccessVoting.observe(viewLifecycleOwner,{result ->
+            when(result){
+                is Resource.Success ->{
+                    progressBar.isVisible = false
+                    votingsViewModel.getVotings(FirebaseAuth.getInstance().uid!!)
+                }
+                is Resource.Error ->{
+                    progressBar.isVisible = false
+                    Snackbar.make(
+                        requireView(),
+                        "Ошибка голосования",
                         Snackbar.LENGTH_SHORT
                     )
                 }
