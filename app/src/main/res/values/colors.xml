@@ -8,4 +8,6 @@
     <color name="card_color">#FBFBFB</color>
     <color name="login_textviews_background">#F3F3F3</color>
     <color name="bottom_nav_btn_active">#30CAD6</color>
+    <color name="negative_voting">#D11414</color>
+    <color name="positive_voting">#13AA07</color>
 </resources>

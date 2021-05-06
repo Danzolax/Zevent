@@ -6,25 +6,67 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.zolax.zevent.R
+import com.zolax.zevent.adapters.MyEventsAdapter
+import com.zolax.zevent.adapters.VotingsAdapter
+import com.zolax.zevent.ui.viewmodels.VotingsViewModel
+import com.zolax.zevent.util.Resource
 
 import dagger.hilt.android.AndroidEntryPoint
-
+import kotlinx.android.synthetic.main.fragment_votings.*
 
 
 @AndroidEntryPoint
 class VotingsFragment : Fragment(R.layout.fragment_votings) {
 
+    private val votingsViewModel: VotingsViewModel by viewModels()
+    private lateinit var votingsAdapter: VotingsAdapter
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        progressBar.isVisible = false
         setHasOptionsMenu(true)
+        initAdapter(recycler_view)
+        subscribeObservers()
+        votingsViewModel.getVotings(FirebaseAuth.getInstance().uid!!)
+    }
 
+    private fun initAdapter(recyclerView: RecyclerView) {
+        votingsAdapter = VotingsAdapter({},{})
+        recyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = votingsAdapter
+        }
     }
 
     private fun subscribeObservers() {
-
+        votingsViewModel.votings.observe(viewLifecycleOwner,{result ->
+            when(result){
+                is Resource.Success ->{
+                    progressBar.isVisible = false
+                    votingsAdapter.votings = result.data!!.votings!!
+                }
+                is Resource.Error ->{
+                    progressBar.isVisible = false
+                    Snackbar.make(
+                        requireView(),
+                        "Ошибка загрузки списка голосований",
+                        Snackbar.LENGTH_SHORT
+                    )
+                }
+                is Resource.Loading ->{
+                    progressBar.isVisible = true
+                }
+            }
+        })
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {

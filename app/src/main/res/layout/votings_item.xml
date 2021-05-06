@@ -6,6 +6,7 @@
     android:layout_margin="16dp"
     app:cardElevation="8dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     app:cardCornerRadius="@dimen/corner_radius">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -14,80 +15,83 @@
         android:layout_gravity="center">
 
         <TextView
-            android:id="@+id/eventTitle"
+            android:id="@+id/event_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:text="Футбольчик с золахом"
+            android:fontFamily="@font/oxygen"
             android:textColor="@color/header2_text_color"
-            android:fontFamily="@font/oxygen"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            app:layout_constraintEnd_toStartOf="@+id/guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Футбольчик с золахом" />
 
         <TextView
-            android:id="@+id/eventType"
+            android:id="@+id/event_category"
             android:layout_width="0dp"
             android:layout_marginTop="12dp"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/eventTitle"
+            app:layout_constraintTop_toBottomOf="@+id/event_title"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline"
-            android:text="Футбол"
+            tools:text="Футбол"
             android:textColor="@color/event_item_text_color"
             android:fontFamily="@font/oxygen"
             android:textSize="14sp"/>
         <TextView
-            android:id="@+id/eventPlayersCount"
+            android:id="@+id/player_name"
             android:layout_width="0dp"
             android:layout_marginTop="12dp"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/eventType"
+            app:layout_constraintTop_toBottomOf="@+id/event_category"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline"
-            android:text="Количество игроков - 4/12"
+            tools:text="Даниил"
             android:textColor="@color/event_item_text_color"
             android:fontFamily="@font/oxygen"
             android:textSize="14sp"/>
 
         <TextView
-            android:id="@+id/event_date"
+            android:id="@+id/player_role"
             android:layout_width="0dp"
             android:layout_marginTop="12dp"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/eventPlayersCount"
+            app:layout_constraintTop_toBottomOf="@+id/player_name"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline"
-            android:text="Дата и время - 15.02.2021 13:00"
+            tools:text="Форвард"
             android:textColor="@color/event_item_text_color"
             android:fontFamily="@font/oxygen"
             android:textSize="14sp"/>
 
 
         <ImageButton
-            android:id="@+id/mapButton"
+            android:id="@+id/positive_button"
             android:background="@drawable/event_map_btn_background"
-            android:src="@drawable/ic_map_36"
+            android:src="@drawable/ic_positive"
             android:elevation="8dp"
             android:layout_width="86dp"
             android:layout_height="36dp"
             app:layout_constraintStart_toStartOf="@+id/guideline"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/moreButton"
+            app:layout_constraintBottom_toTopOf="@id/negative_button"
             />
 
         <ImageButton
-            android:id="@+id/moreButton"
+            android:id="@+id/negative_button"
+            android:background="@drawable/event_map_btn_background"
+            android:src="@drawable/ic_negative"
+            android:elevation="8dp"
             android:layout_width="86dp"
-            android:layout_height="53dp"
-            android:layout_marginTop="8dp"
-            android:src="@drawable/ic_my_event_more"
-            android:background="@drawable/event_subscribe_btn_background"
+            android:layout_height="36dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/guideline"
-            app:layout_constraintTop_toBottomOf="@id/mapButton"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/positive_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
+
+
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"
