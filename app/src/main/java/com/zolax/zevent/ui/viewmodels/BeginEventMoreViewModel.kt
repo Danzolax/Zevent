@@ -9,7 +9,6 @@ import com.zolax.zevent.models.Player
 import com.zolax.zevent.repositories.FirebaseRepository
 import com.zolax.zevent.util.Resource
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class BeginEventMoreViewModel @ViewModelInject constructor(
     val repository: FirebaseRepository
@@ -32,7 +31,13 @@ class BeginEventMoreViewModel @ViewModelInject constructor(
         }
     }
     fun addPlayersInVotingsAndDeleteBeginEvent(beginEventId: String, userId: String) = viewModelScope.launch {
-       val response =  repository.addPlayersInVotingsAndDeleteBeginEvent(beginEventId,userId)
+        isSuccessDelete.value?.let {
+            if (it is Resource.Loading){
+                return@launch
+            }
+        }
+        isSuccessDelete.postValue(Resource.Loading())
+        val response =  repository.addPlayersInVotingsAndDeleteBeginEvent(beginEventId,userId)
         isSuccessDelete.postValue(response)
     }
 }

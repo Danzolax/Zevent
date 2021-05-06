@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -19,7 +20,9 @@ import com.zolax.zevent.models.Player
 import com.zolax.zevent.ui.viewmodels.BeginEventMoreViewModel
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.activity_registration.*
 import kotlinx.android.synthetic.main.fragment_begin_event_more.*
+import kotlinx.android.synthetic.main.fragment_begin_event_more.progressBar
 import timber.log.Timber
 import java.util.*
 
@@ -32,6 +35,7 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        progressBar.isVisible = false
         subscribeObservers()
         beginEventMoreViewModel.getBeginEventById(requireArguments().getString("eventId")!!)
     }
@@ -54,11 +58,19 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
         beginEventMoreViewModel.isSuccessDelete.observe(viewLifecycleOwner,{ result ->
             when(result){
                 is Resource.Success ->{
+                    progressBar.isVisible = false
+                    end_event_button.isClickable = true
                     Snackbar.make(requireView(),"Вы успешно завершили мероприятие", Snackbar.LENGTH_SHORT)
                     findNavController().popBackStack()
                 }
                 is Resource.Error ->{
+                    progressBar.isVisible = false
+                    end_event_button.isClickable = true
                     Snackbar.make(requireView(),"Ошибка завершения мероприятия, попробуйте позже", Snackbar.LENGTH_SHORT)
+                }
+                is Resource.Loading ->{
+                    progressBar.isVisible = true
+                    end_event_button.isClickable = false
                 }
             }
         })

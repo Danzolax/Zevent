@@ -52,6 +52,7 @@ class FirebaseRepository {
                 firebaseUser = result.user
                 users.document(firebaseUser!!.uid).set(user).await()
                 storageRef.child(firebaseUser.uid).putFile(uri).await()
+                createVoting(firebaseUser.uid)
                 Resource.Success<Unit>()
             }
         }
@@ -524,23 +525,29 @@ class FirebaseRepository {
         Timber.d("begin add votings")
         val event = beginEvents.document(beginEventId).get().await().toObject(Event::class.java)
         Timber.d("event $event")
-        val voting = votings.whereEqualTo("userId",userId).get().await().toObjects(Votings::class.java)[0]
-        Timber.d("votingsElem $voting")
+
         event!!.players!!.forEach { player1 ->
             event.players!!.forEach { player2 ->
-                if ((player1.userId != player2.userId) or (player2.userId != getCurrentUserId())) {
+                Timber.d("player ${player1.userId} to ${player2.userId}")
+                if (player1.userId != player2.userId) {
+                    val voting = votings.whereEqualTo("userId",player1.userId).get().await().toObjects(Votings::class.java)[0]
+                    Timber.d("Voting before add $voting")
                     if (voting.votings == null){
                         voting.votings = mutableListOf()
                     }
                     voting.votings!!.add(Voting(eventTitle = event.title,event.category,player2))
+                    Timber.d("Voting before after $voting")
+                    votings.document(voting.id!!).set(voting).await()
                 }
             }
         }
-        Timber.d("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        Timber.d("votingsElem $voting")
-        votings.document(voting.id!!).set(voting).await()
+
         beginEvents.document(beginEventId).delete().await()
         Resource.Success<Unit>()
+    }
+
+    suspend fun createVoting(userId: String){
+        votings.add(Votings(userId = userId,votings = mutableListOf())).await()
     }
 
 
