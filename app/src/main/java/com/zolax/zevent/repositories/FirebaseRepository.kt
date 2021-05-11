@@ -10,6 +10,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.zolax.zevent.models.*
+import com.zolax.zevent.util.HungarianAlgorithm
 import com.zolax.zevent.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -246,19 +247,19 @@ class FirebaseRepository {
                 }
                 when (player.role) {
                     "Нападающий" -> {
-                        if (count >= 3)
+                        if (count >= 6)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Полузащитник" -> {
-                        if (count >= 4)
+                        if (count >= 8)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Защитник" -> {
-                        if (count >= 3)
+                        if (count >= 6)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Вратарь" -> {
-                        if (count >= 1)
+                        if (count >= 2)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                 }
@@ -272,15 +273,15 @@ class FirebaseRepository {
                 }
                 when (player.role) {
                     "Форвард" -> {
-                        if (count >= 2)
+                        if (count >= 4)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Защитник" -> {
-                        if (count >= 2)
+                        if (count >= 4)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                     "Центровой" -> {
-                        if (count >= 1)
+                        if (count >= 2)
                             return@safeCall Resource.Error(msg = "Роль занята!")
                     }
 
@@ -288,9 +289,36 @@ class FirebaseRepository {
 
             }
             "Волейбол" -> {
+                var count = 0
                 event.players!!.forEach {
                     if (it.role == player.role) {
-                        return@safeCall Resource.Error(msg = "Роль занята!")
+                        count++
+                    }
+                }
+                when (player.role) {
+                    "Либеро" -> {
+                        if (count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Диагональный" -> {
+                        if (count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Доигровщик" -> {
+                        if (count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Центральный блокирующий" -> {
+                        if (count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Связующий" -> {
+                        if (count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
+                    }
+                    "Подающий" -> {
+                        if (count >= 2)
+                            return@safeCall Resource.Error(msg = "Роль занята!")
                     }
                 }
             }
@@ -483,15 +511,43 @@ class FirebaseRepository {
         Resource.Success(eventList)
     }
 
-    //Перемещение мероприяти, которые начались в другой список
+    //Перемещение мероприятий, которые начались в другой список
     suspend fun moveEventsToBeginByUserID(id: String) {
         val eventsList = getAllEventsByUserId(id).data
-        eventsList!!.forEach {
-            if (it.eventDateTime!!.time < Calendar.getInstance().timeInMillis) {
-                events.document(it.id!!).delete().await()
-                beginEvents.document(it.id!!).set(it).await()
+
+        eventsList!!.forEach { event ->
+            if (event.eventDateTime!!.time < Calendar.getInstance().timeInMillis) {
+                events.document(event.id!!).delete().await()
+                if (event.category != "Другое") {
+                    val players = event.players
+                    val playerScoreList = getPlayerScoreList(players!!, event.category!!)
+                    event.players = HungarianAlgorithm.eventPlayersRecomendation(
+                        playerScoreList,
+                        event.category!!
+                    )
+                }
+                beginEvents.document(event.id!!).set(event).await()
             }
         }
+    }
+
+    private suspend fun getPlayerScoreList(
+        players: List<Player>,
+        category: String
+    ): List<Pair<Player, Score>> {
+        val playerScoreList = mutableListOf<Pair<Player, Score>>()
+        players.forEach { player ->
+            val scoreList =
+                scores.whereEqualTo("userId", player.userId).get().await()
+                    .toObjects(Score::class.java)
+            scoreList.forEach { score ->
+                if (score.sportType == category) {
+                    playerScoreList.add(Pair(player, score))
+                    return@forEach
+                }
+            }
+        }
+        return playerScoreList
     }
 
     suspend fun getAllBeginEventsByUserId(id: String) = safeCall {
@@ -532,6 +588,7 @@ class FirebaseRepository {
                             .toObjects(Votings::class.java)[0]
                         if (voting.votings == null) {
                             voting.votings = mutableListOf()
+
                         }
                         voting.votings!!.add(
                             Voting(
@@ -572,25 +629,25 @@ class FirebaseRepository {
     suspend fun createScore(userId: String) {
         val footballScore = Score(userId = userId, sportType = Score.FOOTBALL)
         footballScore.scores = mutableMapOf(
-            Pair("Нападающий", 0),
-            Pair("Полузащитник", 0),
-            Pair("Защитник", 0),
-            Pair("Вратарь", 0)
+            Pair("Нападающий", 100),
+            Pair("Полузащитник", 100),
+            Pair("Защитник", 100),
+            Pair("Вратарь", 100)
         )
         val basketballScore = Score(userId = userId, sportType = Score.BASKETBALL)
         basketballScore.scores = mutableMapOf(
-            Pair("Защитник", 0),
-            Pair("Форвард", 0),
-            Pair("Центровой", 0)
+            Pair("Защитник", 100),
+            Pair("Форвард", 100),
+            Pair("Центровой", 100)
         )
         val volleybalScore = Score(userId = userId, sportType = Score.VOLLEYBALL)
         volleybalScore.scores = mutableMapOf(
-            Pair("Либеро", 0),
-            Pair("Диагональный", 0),
-            Pair("Доигровщик", 0),
-            Pair("Центральный блокирующий", 0),
-            Pair("Связующий", 0),
-            Pair("Подающий", 0)
+            Pair("Либеро", 100),
+            Pair("Диагональный", 100),
+            Pair("Доигровщик", 100),
+            Pair("Центральный блокирующий", 100),
+            Pair("Связующий", 100),
+            Pair("Подающий", 100)
         )
         scores.add(footballScore).await()
         scores.add(basketballScore).await()
@@ -598,31 +655,50 @@ class FirebaseRepository {
     }
 
     suspend fun addScore(
-        anUserId: String,
-        category: String,
-        role: String,
-        votingPosition: Int,
+        voting: Voting,
         votingsId: String
     ) = safeCall {
         val scoreList =
-            scores.whereEqualTo("userId", anUserId).get().await().toObjects(Score::class.java)
+            scores.whereEqualTo("userId", voting.player!!.userId).get().await()
+                .toObjects(Score::class.java)
         var score = Score()
         scoreList.forEach {
-            if (it.sportType == category) {
+            if (it.sportType == voting.eventCategory) {
                 score = it
                 return@forEach
             }
         }
-        score.scores!![role] = score.scores!![role]!! + 1
+        score.scores!![voting.player!!.role!!] = score.scores!![voting.player!!.role!!]!! + 1
         scores.document(score.id!!).set(score)
 
         val votingList = votings.document(votingsId).get().await().toObject(Votings::class.java)
-        votingList!!.votings!!.removeAt(votingPosition)
+        votingList!!.votings!!.remove(voting)
         votings.document(votingsId).set(votingList).await()
         Resource.Success<Unit>()
     }
 
-    suspend fun removeScore(userId: String, category: String, role: String) = safeCall {
+    suspend fun removeScore(
+        voting: Voting,
+        votingsId: String
+    ) = safeCall {
+        val scoreList =
+            scores.whereEqualTo("userId", voting.player!!.userId).get().await()
+                .toObjects(Score::class.java)
+        var score = Score()
+        scoreList.forEach {
+            if (it.sportType == voting.eventCategory) {
+                score = it
+                return@forEach
+            }
+        }
+        if (score.scores!![voting.player!!.role!!]!! != 0) {
+            score.scores!![voting.player!!.role!!] = score.scores!![voting.player!!.role!!]!! - 1
+            scores.document(score.id!!).set(score)
+
+        }
+        val votingList = votings.document(votingsId).get().await().toObject(Votings::class.java)
+        votingList!!.votings!!.remove(voting)
+        votings.document(votingsId).set(votingList).await()
         Resource.Success<Unit>()
     }
 

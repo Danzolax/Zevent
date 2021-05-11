@@ -46,6 +46,17 @@ class BeginEventsAdapter : RecyclerView.Adapter<BeginEventsAdapter.AllEventsView
         )
     }
 
+    private var onMapButtonClickListener: ((Event) -> Unit)? = null
+    private var onMoreButtonClickListener: ((Event) -> Unit)? = null
+
+    fun setOnMapButtonClickListener(i:((Event) -> Unit)){
+        onMapButtonClickListener = i
+    }
+
+    fun setOnMoreButtonClickListener(i:((Event) -> Unit)){
+        onMoreButtonClickListener = i
+    }
+
     override fun onBindViewHolder(holder: AllEventsViewHolder, position: Int) {
         val event = events[position]
         holder.itemView.apply {
@@ -55,15 +66,14 @@ class BeginEventsAdapter : RecyclerView.Adapter<BeginEventsAdapter.AllEventsView
                 "Количество игроков - ${event.players?.size}/${event.playersCount}"
             event_date.visibility = View.GONE
             mapButton.setOnClickListener {
-                val bundle = Bundle()
-                bundle.putDouble("latitude", event.latitude!!)
-                bundle.putDouble("longitude", event.longitude!!)
-                findNavController().navigate(R.id.action_eventsFragment_to_simpleMapViewerFragment, bundle)
+                onMapButtonClickListener?.let { click ->
+                    click(event)
+                }
             }
             moreButton.setOnClickListener {
-                val bundle = Bundle()
-                bundle.putString("eventId", event.id)
-                findNavController().navigate(R.id.action_eventsFragment_to_beginEventMoreFragment, bundle)
+                onMoreButtonClickListener?.let { click ->
+                    click(event)
+                }
             }
 
         }

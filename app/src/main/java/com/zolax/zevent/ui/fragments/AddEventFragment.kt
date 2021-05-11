@@ -135,6 +135,7 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
             ) {
                 when (resources.getStringArray(R.array.sportTypes)[selectedItemPosition]) {
                     "Футбол" -> {
+                        role_container.visibility = View.VISIBLE
                         val rolesAdapter = ArrayAdapter.createFromResource(
                             requireContext(),
                             R.array.footballRoleTypes,
@@ -142,8 +143,11 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                         )
                         rolesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         role.adapter = rolesAdapter
+                        players_count.setText("22")
+                        players_count.isEnabled = false
                     }
                     "Баскетбол" -> {
+                        role_container.visibility = View.VISIBLE
                         val bAdapter = ArrayAdapter.createFromResource(
                             requireContext(),
                             R.array.basketballRoleTypes,
@@ -151,6 +155,8 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                         )
                         bAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         role.adapter = bAdapter
+                        players_count.setText("10")
+                        players_count.isEnabled = false
                     }
                     "Волейбол" -> {
                         val vAdapter = ArrayAdapter.createFromResource(
@@ -158,11 +164,16 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                             R.array.volleyballRoleTypes,
                             android.R.layout.simple_spinner_item
                         )
+                        role_container.visibility = View.VISIBLE
                         vAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                         role.adapter = vAdapter
+                        players_count.setText("12")
+                        players_count.isEnabled = false
                     }
                     else -> {
                         role_container.visibility = View.GONE
+                        players_count.setText("")
+                        players_count.isEnabled = true
                     }
                 }
             }

@@ -12,6 +12,6 @@ data class Score(
     companion object {
         const val FOOTBALL = "Футбол"
         const val BASKETBALL = "Баскетбол"
-        const val VOLLEYBALL = "Воллейбол"
+        const val VOLLEYBALL = "Волейбол"
     }
 }

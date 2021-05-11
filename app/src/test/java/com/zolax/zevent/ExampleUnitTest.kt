@@ -18,16 +18,6 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        val auth = FirebaseAuth.getInstance()
-        val users = Firebase.firestore.collection("users")
-        runBlocking {
-
-            users
-                .document(auth.uid!!)
-                .get()
-                .await()
-                .toObject(User::class.java)
-        }
-
+        print(1)
     }
 }

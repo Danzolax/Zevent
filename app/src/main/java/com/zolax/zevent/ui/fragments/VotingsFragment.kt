@@ -15,11 +15,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.zolax.zevent.R
-import com.zolax.zevent.adapters.MyEventsAdapter
 import com.zolax.zevent.adapters.VotingsAdapter
 import com.zolax.zevent.ui.viewmodels.VotingsViewModel
 import com.zolax.zevent.util.Resource
-
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_votings.*
 
@@ -42,7 +40,19 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
 
 
     private fun initAdapter(recyclerView: RecyclerView) {
-        votingsAdapter = VotingsAdapter(votingsViewModel)
+        votingsAdapter = VotingsAdapter()
+        votingsAdapter.setPositiveButtonClickListener { voting, votingsId ->
+            votingsViewModel.addScore(
+                voting,
+                votingsId
+            )
+        }
+        votingsAdapter.setNegativeButtonClickListener { voting, votingsId ->
+            votingsViewModel.removeScore(
+                voting,
+                votingsId
+            )
+        }
         recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = votingsAdapter
@@ -50,14 +60,14 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
     }
 
     private fun subscribeObservers() {
-        votingsViewModel.votings.observe(viewLifecycleOwner,{result ->
-            when(result){
-                is Resource.Success ->{
+        votingsViewModel.votings.observe(viewLifecycleOwner, { result ->
+            when (result) {
+                is Resource.Success -> {
                     progressBar.isVisible = false
                     votingsAdapter.votingsId = result.data!!.id!!
                     votingsAdapter.votings = result.data.votings!!
                 }
-                is Resource.Error ->{
+                is Resource.Error -> {
                     progressBar.isVisible = false
                     Snackbar.make(
                         requireView(),
@@ -65,18 +75,18 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
                         Snackbar.LENGTH_SHORT
                     )
                 }
-                is Resource.Loading ->{
+                is Resource.Loading -> {
                     progressBar.isVisible = true
                 }
             }
         })
-        votingsViewModel.isSuccessVoting.observe(viewLifecycleOwner,{result ->
-            when(result){
-                is Resource.Success ->{
+        votingsViewModel.isSuccessVoting.observe(viewLifecycleOwner, { result ->
+            when (result) {
+                is Resource.Success -> {
                     progressBar.isVisible = false
                     votingsViewModel.getVotings(FirebaseAuth.getInstance().uid!!)
                 }
-                is Resource.Error ->{
+                is Resource.Error -> {
                     progressBar.isVisible = false
                     Snackbar.make(
                         requireView(),
@@ -84,7 +94,7 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
                         Snackbar.LENGTH_SHORT
                     )
                 }
-                is Resource.Loading ->{
+                is Resource.Loading -> {
                     progressBar.isVisible = true
                 }
             }
@@ -107,10 +117,9 @@ class VotingsFragment : Fragment(R.layout.fragment_votings) {
     }
 
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId){
-           android.R.id.home -> {
+        return when (item.itemId) {
+            android.R.id.home -> {
                 findNavController().popBackStack()
                 true
             }

@@ -30,10 +30,7 @@ class VotingsViewModel @ViewModelInject constructor(
         votings.postValue(response)
     }
     fun addScore(
-        anUserId: String,
-        category: String,
-        role: String,
-        votingPosition: Int,
+        voting: Voting,
         votingId: String
     ) = viewModelScope.launch {
         isSuccessVoting.value?.let {
@@ -42,7 +39,21 @@ class VotingsViewModel @ViewModelInject constructor(
             }
         }
         isSuccessVoting.postValue(Resource.Loading())
-        val response = firebaseRepository.addScore(anUserId, category, role, votingPosition, votingId)
+        val response = firebaseRepository.addScore(voting, votingId)
         isSuccessVoting.postValue(response)
     }
+    fun removeScore(
+        voting: Voting,
+        votingId: String
+    ) = viewModelScope.launch {
+        isSuccessVoting.value?.let {
+            if (it is Resource.Loading){
+                return@launch
+            }
+        }
+        isSuccessVoting.postValue(Resource.Loading())
+        val response = firebaseRepository.removeScore(voting, votingId)
+        isSuccessVoting.postValue(response)
+    }
+
 }

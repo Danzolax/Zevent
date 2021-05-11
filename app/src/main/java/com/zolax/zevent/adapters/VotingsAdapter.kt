@@ -14,7 +14,6 @@ import kotlinx.android.synthetic.main.votings_item.view.*
 
 
 class VotingsAdapter(
-    val votingsViewModel: VotingsViewModel
 ) : RecyclerView.Adapter<VotingsAdapter.VotingsViewHolder>() {
 
     lateinit var votingsId: String
@@ -49,6 +48,17 @@ class VotingsAdapter(
         )
     }
 
+    private var positiveButtonClickListener: ((Voting,String) -> Unit)? = null
+    private var negativeButtonClickListener: ((Voting,String) -> Unit)? = null
+
+    fun setPositiveButtonClickListener(i: ((Voting,String) -> Unit)){
+        positiveButtonClickListener = i
+    }
+
+    fun setNegativeButtonClickListener(i: ((Voting,String) -> Unit)){
+        negativeButtonClickListener = i
+    }
+
     override fun onBindViewHolder(holder: VotingsViewHolder, position: Int) {
         val voting = votings[position]
         holder.itemView.apply {
@@ -57,13 +67,14 @@ class VotingsAdapter(
             player_name.text = voting.userName
             player_role.text = voting.player!!.role
             positive_button.setOnClickListener{
-                votingsViewModel.addScore(
-                    voting.player!!.userId!!,
-                    voting.eventCategory!!,
-                    voting.player!!.role!!,
-                    position,
-                    votingsId
-                )
+                positiveButtonClickListener?.let {
+                    it(voting,votingsId)
+                }
+            }
+            negative_button.setOnClickListener{
+                negativeButtonClickListener?.let {
+                    it(voting,votingsId)
+                }
             }
 
         }
