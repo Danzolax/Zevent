@@ -25,10 +25,10 @@ class MapViewModel @ViewModelInject constructor(
         eventsData.postValue(response)
     }
 
-    fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng) =
+    fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng,radius: Int) =
         viewModelScope.launch {
             val response =
-                firebaseRepository.getAllEventsReverseByUserIdWithRadius(id, userLocation)
+                firebaseRepository.getAllEventsReverseByUserIdWithRadius(id, userLocation,radius)
             eventsData.postValue(response)
         }
 
@@ -39,7 +39,8 @@ class MapViewModel @ViewModelInject constructor(
         date: String,
         isNeedEquip: Boolean,
         currentPlayersCount: Int?,
-        allPlayersCount: Int?
+        allPlayersCount: Int?,
+        radius: Int
     ) = viewModelScope.launch {
         val response = firebaseRepository.getFilteredList(
             userId,
@@ -48,7 +49,8 @@ class MapViewModel @ViewModelInject constructor(
             date,
             isNeedEquip,
             currentPlayersCount,
-            allPlayersCount
+            allPlayersCount,
+            radius
         )
         Timber.d("${response.data}")
         eventsData.postValue(response)

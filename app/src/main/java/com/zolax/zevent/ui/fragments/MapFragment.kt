@@ -1,5 +1,4 @@
-
- package com.zolax.zevent.ui.fragments
+package com.zolax.zevent.ui.fragments
 
 
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
@@ -8,6 +7,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
@@ -40,13 +40,10 @@ import com.zolax.zevent.util.Constants.REQUEST_LOCATION_AGAIN
 import com.zolax.zevent.util.DialogUtil
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.filter_dialog.*
 import kotlinx.android.synthetic.main.filter_dialog.view.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import pub.devrel.easypermissions.EasyPermissions
 import timber.log.Timber
-import java.lang.NumberFormatException
-import java.util.*
 import javax.inject.Inject
 
 
@@ -55,9 +52,10 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener {
     private val mapViewModel: MapViewModel by viewModels()
     private var map: GoogleMap? = null
-    lateinit var manager : LocationManager
-    val markerList = mutableListOf<Marker>()
+    private lateinit var manager: LocationManager
+    private lateinit var mySharedPreferences: SharedPreferences
 
+    private val markerList = mutableListOf<Marker>()
 
 
     @Inject
@@ -66,24 +64,29 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        mySharedPreferences = requireActivity().getSharedPreferences(Constants.APP_PREFERENCES, Context.MODE_PRIVATE)
         requestPermission()
         manager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         launchMap(savedInstanceState)
         setHasOptionsMenu(true)
         subscribeObservers()
-        if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                 it?.let {
                     mapViewModel.getAllEventsReverseByUserIdWithRadius(
                         FirebaseAuth.getInstance().uid!!,
-                        LatLng(it.latitude, it.longitude)
+                        LatLng(it.latitude, it.longitude),
+                        mySharedPreferences.getInt(
+                            Constants.APP_PREFERENCES_EVENT_SEARCH_RADIUS,
+                            Constants.DEFAULT_EVENT_SEARCH_RADIUS
+                        )
                     )
                 }
             }
         } else {
             buildAlertMessageNoLocationService()
         }
-        mapViewModel.moveEventsToBeginByUserID( FirebaseAuth.getInstance().uid!!)
+        mapViewModel.moveEventsToBeginByUserID(FirebaseAuth.getInstance().uid!!)
     }
 
     private fun subscribeObservers() {
@@ -118,11 +121,12 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         }
     }
 
-    private fun clearMap(){
-        if (markerList.isNotEmpty()){
+    private fun clearMap() {
+        if (markerList.isNotEmpty()) {
             markerList.forEach { it.remove() }
         }
     }
+
     private fun setMarkerOnMap(event: Event) {
 
         val marker: Marker? = map?.addMarker(
@@ -140,7 +144,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
     override fun onMarkerClick(p0: Marker?): Boolean {
         Timber.d("marker clicked!")
         p0?.let {
-            if (it.tag is Event){
+            if (it.tag is Event) {
                 val bundle = Bundle()
                 val gson = Gson()
                 bundle.putString("event", gson.toJson(it.tag))
@@ -191,25 +195,35 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
 
     @SuppressLint("MissingPermission")
     private fun initDialog() {
-        val view = layoutInflater.inflate(R.layout.filter_dialog,null)
-        DialogUtil.buildFilterDialog(requireContext(),view){ _, _ ->
-            if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        val view = layoutInflater.inflate(R.layout.filter_dialog, null)
+        DialogUtil.buildDialogWithView(requireContext(), "Фильтры", view) { _, _ ->
+            if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                     it?.let {
                         var currentPlayersCount: Int? = null
                         var allPlayersCount: Int? = null
-                        if (view.current_players_count_filter.text.toString() != ""){
+                        if (view.current_players_count_filter.text.toString() != "") {
                             try {
-                                currentPlayersCount =  Integer.parseInt(view.current_players_count_filter.text.toString())
-                            } catch (e: NumberFormatException){
-                                Snackbar.make(requireView(),"Не правильно введено количество игроков", Snackbar.LENGTH_SHORT)
+                                currentPlayersCount =
+                                    Integer.parseInt(view.current_players_count_filter.text.toString())
+                            } catch (e: NumberFormatException) {
+                                Snackbar.make(
+                                    requireView(),
+                                    "Не правильно введено количество игроков",
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
                             }
                         }
-                        if (view.all_players_count_filter.text.toString() != ""){
+                        if (view.all_players_count_filter.text.toString() != "") {
                             try {
-                                allPlayersCount =  Integer.parseInt(view.all_players_count_filter.text.toString())
-                            } catch (e: NumberFormatException){
-                                Snackbar.make(requireView(),"Не правильно введено количество игроков", Snackbar.LENGTH_SHORT)
+                                allPlayersCount =
+                                    Integer.parseInt(view.all_players_count_filter.text.toString())
+                            } catch (e: NumberFormatException) {
+                                Snackbar.make(
+                                    requireView(),
+                                    "Не правильно введено количество игроков",
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
                             }
                         }
                         mapViewModel.getFilteredList(
@@ -219,7 +233,11 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
                             view.date_filter.selectedItem as String,
                             view.is_need_equip_filter.isChecked,
                             currentPlayersCount,
-                            allPlayersCount
+                            allPlayersCount,
+                            mySharedPreferences.getInt(
+                                Constants.APP_PREFERENCES_EVENT_SEARCH_RADIUS,
+                                Constants.DEFAULT_EVENT_SEARCH_RADIUS
+                            )
                         )
                     }
                 }
@@ -227,12 +245,14 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
                 buildAlertMessageNoLocationService()
             }
         }.show()
-        val categoryAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_spinner_item,
+        val categoryAdapter = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item,
             Constants.CATEGORY_FILTER_LIST
         )
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         view.category_filter.adapter = categoryAdapter
-        val dateAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_spinner_item,
+        val dateAdapter = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item,
             Constants.DATE_FILTER_LIST
         )
         dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -253,7 +273,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
                 }
 
             }
-        } else { 
+        } else {
             buildAlertMessageNoLocationService()
         }
 
@@ -283,9 +303,6 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         map?.uiSettings?.isCompassEnabled = false
         map?.uiSettings?.isMyLocationButtonEnabled = false
     }
-
-
-
 
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -381,8 +398,6 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         super.onSaveInstanceState(outState)
         mapView?.onSaveInstanceState(outState)
     }
-
-
 
 
 }

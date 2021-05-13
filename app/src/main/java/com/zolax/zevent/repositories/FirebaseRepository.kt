@@ -1,5 +1,6 @@
 package com.zolax.zevent.repositories
 
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -148,7 +149,7 @@ class FirebaseRepository {
         Resource.Success(events)
     }
 
-    //Возвращает список мероприятий конкретного пользовател
+    //Возвращает список мероприятий конкретного пользователя
     @RequiresApi(Build.VERSION_CODES.N)
     suspend fun getAllEventsByUserId(id: String) = safeCall {
         val events = events.get().await().toObjects(Event::class.java)
@@ -192,7 +193,7 @@ class FirebaseRepository {
     }
 
     //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км,
-    suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng) = safeCall {
+    suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng,radius: Int) = safeCall {
         val events = events.get().await().toObjects(Event::class.java)
         Timber.d("load all events by $id")
         Timber.d("$events")
@@ -215,7 +216,7 @@ class FirebaseRepository {
                 userLocation.longitude,
                 it.latitude!!,
                 it.longitude!!,
-            ) > 5000
+            ) > radius
         }
         Timber.d("$events")
         Resource.Success(events)
@@ -394,9 +395,10 @@ class FirebaseRepository {
         date: String,
         isNeedEquip: Boolean,
         currentPlayersCount: Int?,
-        allPlayersCount: Int?
+        allPlayersCount: Int?,
+        searchRadius: Int
     ) = safeCall {
-        val response = getAllEventsReverseByUserIdWithRadius(id, location)
+        val response = getAllEventsReverseByUserIdWithRadius(id, location,searchRadius)
         if (response is Resource.Error) {
             return@safeCall response
         }
@@ -497,6 +499,7 @@ class FirebaseRepository {
                                 (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH))
                     }
                 }
+
             }
         }
         if (isNeedEquip) {
@@ -580,7 +583,6 @@ class FirebaseRepository {
     suspend fun addPlayersInVotingsAndDeleteBeginEvent(beginEventId: String, userId: String) =
         safeCall {
             val event = beginEvents.document(beginEventId).get().await().toObject(Event::class.java)
-
             event!!.players!!.forEach { player1 ->
                 event.players!!.forEach { player2 ->
                     if (player1.userId != player2.userId) {
@@ -602,7 +604,6 @@ class FirebaseRepository {
                     }
                 }
             }
-
             beginEvents.document(beginEventId).delete().await()
             Resource.Success<Unit>()
         }

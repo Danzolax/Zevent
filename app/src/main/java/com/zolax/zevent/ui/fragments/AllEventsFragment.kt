@@ -4,13 +4,12 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.location.LocationManager
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.widget.ArrayAdapter
-import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +18,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-
 import com.zolax.zevent.R
 import com.zolax.zevent.adapters.AllEventsAdapter
 import com.zolax.zevent.ui.viewmodels.AllEventsViewModel
@@ -30,7 +28,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.filter_dialog.view.*
 import kotlinx.android.synthetic.main.fragment_all_events.*
 import timber.log.Timber
-import java.lang.NumberFormatException
 import javax.inject.Inject
 
 
@@ -42,19 +39,26 @@ class AllEventsFragment : Fragment(R.layout.fragment_all_events) {
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
-    lateinit var manager : LocationManager
+    lateinit var manager: LocationManager
+    private lateinit var mySharedPreferences: SharedPreferences
 
     @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        mySharedPreferences = requireActivity().getSharedPreferences(Constants.APP_PREFERENCES, Context.MODE_PRIVATE)
         initAdapter(recycler_view)
         subscribeObservers()
         manager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                 it?.let {
-                    allEventsViewModel.getAllEventsReverseByUserIdWithRadius(FirebaseAuth.getInstance().uid!!,
-                        LatLng(it.latitude,it.longitude)
+                    allEventsViewModel.getAllEventsReverseByUserIdWithRadius(
+                        FirebaseAuth.getInstance().uid!!,
+                        LatLng(it.latitude, it.longitude),
+                        mySharedPreferences.getInt(
+                            Constants.APP_PREFERENCES_EVENT_SEARCH_RADIUS,
+                            Constants.DEFAULT_EVENT_SEARCH_RADIUS
+                        )
                     )
                 }
             }
@@ -69,7 +73,6 @@ class AllEventsFragment : Fragment(R.layout.fragment_all_events) {
             initDialog()
         }
     }
-
 
 
     private fun subscribeObservers() {
@@ -111,25 +114,35 @@ class AllEventsFragment : Fragment(R.layout.fragment_all_events) {
 
     @SuppressLint("MissingPermission")
     private fun initDialog() {
-        val view = layoutInflater.inflate(R.layout.filter_dialog,null)
-        DialogUtil.buildFilterDialog(requireContext(),view){ _, _ ->
+        val view = layoutInflater.inflate(R.layout.filter_dialog, null)
+        DialogUtil.buildDialogWithView(requireContext(),"Фильтры", view) { _, _ ->
             if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                     it?.let {
                         var currentPlayersCount: Int? = null
                         var allPlayersCount: Int? = null
-                        if (view.current_players_count_filter.text.toString() != ""){
+                        if (view.current_players_count_filter.text.toString() != "") {
                             try {
-                                currentPlayersCount =  Integer.parseInt(view.current_players_count_filter.text.toString())
-                            } catch (e: NumberFormatException){
-                                Snackbar.make(requireView(),"Не правильно введено количество игроков", Snackbar.LENGTH_SHORT)
+                                currentPlayersCount =
+                                    Integer.parseInt(view.current_players_count_filter.text.toString())
+                            } catch (e: NumberFormatException) {
+                                Snackbar.make(
+                                    requireView(),
+                                    "Не правильно введено количество игроков",
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
                             }
                         }
-                        if (view.all_players_count_filter.text.toString() != ""){
+                        if (view.all_players_count_filter.text.toString() != "") {
                             try {
-                                allPlayersCount =  Integer.parseInt(view.all_players_count_filter.text.toString())
-                            } catch (e: NumberFormatException){
-                                Snackbar.make(requireView(),"Не правильно введено количество игроков", Snackbar.LENGTH_SHORT)
+                                allPlayersCount =
+                                    Integer.parseInt(view.all_players_count_filter.text.toString())
+                            } catch (e: NumberFormatException) {
+                                Snackbar.make(
+                                    requireView(),
+                                    "Не правильно введено количество игроков",
+                                    Snackbar.LENGTH_SHORT
+                                ).show()
                             }
                         }
                         allEventsViewModel.getFilteredList(
@@ -139,7 +152,11 @@ class AllEventsFragment : Fragment(R.layout.fragment_all_events) {
                             view.date_filter.selectedItem as String,
                             view.is_need_equip_filter.isChecked,
                             currentPlayersCount,
-                            allPlayersCount
+                            allPlayersCount,
+                            mySharedPreferences.getInt(
+                                Constants.APP_PREFERENCES_EVENT_SEARCH_RADIUS,
+                                Constants.DEFAULT_EVENT_SEARCH_RADIUS
+                            )
                         )
                     }
                 }
@@ -147,12 +164,14 @@ class AllEventsFragment : Fragment(R.layout.fragment_all_events) {
                 buildAlertMessageNoLocationService()
             }
         }.show()
-        val categoryAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_spinner_item,
+        val categoryAdapter = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item,
             Constants.CATEGORY_FILTER_LIST
         )
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         view.category_filter.adapter = categoryAdapter
-        val dateAdapter = ArrayAdapter(requireContext(),android.R.layout.simple_spinner_item,
+        val dateAdapter = ArrayAdapter(
+            requireContext(), android.R.layout.simple_spinner_item,
             Constants.DATE_FILTER_LIST
         )
         dateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

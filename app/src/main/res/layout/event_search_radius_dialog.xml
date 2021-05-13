@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="@color/main_white_color"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/radio_min"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Близко"/>
+        <RadioButton
+            android:id="@+id/radio_mid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Средне"/>
+        <RadioButton
+            android:id="@+id/radio_max"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Далеко"/>
+    </RadioGroup>
+
+
+</LinearLayout>

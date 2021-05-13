@@ -24,8 +24,8 @@ class AllEventsViewModel @ViewModelInject constructor(
         eventsData.postValue(response)
     }
     @RequiresApi(Build.VERSION_CODES.N)
-    fun getAllEventsReverseByUserIdWithRadius(id: String,userLocation: LatLng) = viewModelScope.launch {
-        val response = firebaseRepository.getAllEventsReverseByUserIdWithRadius(id,userLocation)
+    fun getAllEventsReverseByUserIdWithRadius(id: String,userLocation: LatLng,radius: Int) = viewModelScope.launch {
+        val response = firebaseRepository.getAllEventsReverseByUserIdWithRadius(id,userLocation,radius)
         eventsData.postValue(response)
     }
 
@@ -36,7 +36,8 @@ class AllEventsViewModel @ViewModelInject constructor(
         date: String,
         isNeedEquip: Boolean,
         currentPlayersCount: Int?,
-        allPlayersCount: Int?
+        allPlayersCount: Int?,
+        radius: Int
     ) = viewModelScope.launch {
         val response = firebaseRepository.getFilteredList(
             userId,
@@ -45,7 +46,8 @@ class AllEventsViewModel @ViewModelInject constructor(
             date,
             isNeedEquip,
             currentPlayersCount,
-            allPlayersCount
+            allPlayersCount,
+            radius
         )
         eventsData.postValue(response)
     }

@@ -1,6 +1,5 @@
 package com.zolax.zevent.ui.fragments
 
-import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -10,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.zolax.zevent.R
@@ -22,7 +20,6 @@ import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.filter_dialog.view.*
 import kotlinx.android.synthetic.main.fragment_my_events.*
-import timber.log.Timber
 import java.lang.NumberFormatException
 
 @AndroidEntryPoint
@@ -76,7 +73,7 @@ class MyEventsFragment : Fragment(R.layout.fragment_my_events) {
 
     private fun initDialog() {
         val view = layoutInflater.inflate(R.layout.filter_dialog, null)
-        DialogUtil.buildFilterDialog(requireContext(), view) { _, _ ->
+        DialogUtil.buildDialogWithView(requireContext(),"Фильтры", view) { _, _ ->
             var currentPlayersCount: Int? = null
             var allPlayersCount: Int? = null
             if (view.current_players_count_filter.text.toString() != "") {

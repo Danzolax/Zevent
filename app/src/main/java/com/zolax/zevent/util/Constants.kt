@@ -8,4 +8,9 @@ object Constants {
     val CATEGORY_FILTER_LIST = listOf("Не фильтровать","Футбол", "Баскетбол", "Волейбол", "Другое")
     val DATE_FILTER_LIST = listOf("Не фильтровать","Сегодня", "На этой неделе", "В этом месяце")
 
+    val APP_PREFERENCES = "mysettings"
+    val APP_PREFERENCES_EVENT_SEARCH_RADIUS = "searchradius"
+    val DEFAULT_EVENT_SEARCH_RADIUS = 5000
+
+
 }

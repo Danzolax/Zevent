@@ -23,9 +23,9 @@ object DialogUtil {
         return builder.create()
     }
 
-    fun buildFilterDialog(context: Context,view: View, positiveAction: DialogInterface.OnClickListener) : AlertDialog {
+    fun buildDialogWithView(context: Context, title: String, view: View, positiveAction: DialogInterface.OnClickListener) : AlertDialog {
         val builder: AlertDialog.Builder =  AlertDialog.Builder(context)
-        builder.setTitle("Фильтры")
+        builder.setTitle(title)
         builder.setPositiveButton(android.R.string.ok,positiveAction)
         builder.setNegativeButton(android.R.string.no) { _, _ ->
         }
