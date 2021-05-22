@@ -40,4 +40,15 @@ class BeginEventMoreViewModel @ViewModelInject constructor(
         val response =  repository.addPlayersInVotingsAndDeleteBeginEvent(beginEventId,userId)
         isSuccessDelete.postValue(response)
     }
+
+    fun deleteBeginEvent(beginEventId: String, userId: String) = viewModelScope.launch {
+        isSuccessDelete.value?.let {
+            if (it is Resource.Loading){
+                return@launch
+            }
+        }
+        isSuccessDelete.postValue(Resource.Loading())
+        val response =  repository.deleteBeginEvent(beginEventId,userId)
+        isSuccessDelete.postValue(response)
+    }
 }

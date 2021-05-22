@@ -8,7 +8,6 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.RemoteMessage
 import com.zolax.zevent.R
-import com.zolax.zevent.util.MessagingService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 

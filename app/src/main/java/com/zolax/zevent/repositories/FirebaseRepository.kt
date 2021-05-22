@@ -112,7 +112,6 @@ class FirebaseRepository {
             Resource.Success<Unit>()
         }
 
-    //TODO фото по умолчанию
     suspend fun updateImageOfCurrentUser(uri: Uri) = safeCall {
         Timber.d("start fun ")
         Timber.d("start update user image uri:$uri")
@@ -143,39 +142,25 @@ class FirebaseRepository {
         }
 
     suspend fun getAllEvents() = safeCall {
-        Timber.d("load all events...")
-        val events = events.get().await().toObjects(Event::class.java)
-        Timber.d("events: $events")
-        Resource.Success(events)
+        val eventsList = events.get().await().toObjects(Event::class.java)
+        Resource.Success(eventsList)
     }
 
     //Возвращает список мероприятий конкретного пользователя
-    @RequiresApi(Build.VERSION_CODES.N)
     suspend fun getAllEventsByUserId(id: String) = safeCall {
-        val events = events.get().await().toObjects(Event::class.java)
-        Timber.d("load all events by $id")
-        Timber.d("$events")
-        events.removeIf {
-            var flag = false
-            it.players?.forEach { elem ->
-                if (elem.userId.equals(id)) {
-                    flag = true
-                    return@forEach
-                }
-            }
-            return@removeIf !flag
+        val eventsList = events.get().await().toObjects(Event::class.java)
+
+        eventsList.removeIf {
+            it.players?.find { it.userId == id } == null
         }
-        Timber.d("$events")
-        Resource.Success(events)
+        Timber.d("$eventsList")
+        Resource.Success(eventsList)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     //Возвращает список мероприятий всех пользователей кроме текушего
     suspend fun getAllEventsReverseByUserId(id: String) = safeCall {
-        val events = events.get().await().toObjects(Event::class.java)
-        Timber.d("load all events by $id")
-        Timber.d("$events")
-        events.removeIf {
+        val eventsList = events.get().await().toObjects(Event::class.java)
+        eventsList.removeIf {
             var flag = false
             it.players?.forEach { elem ->
                 if (elem.userId.equals(id)) {
@@ -185,19 +170,16 @@ class FirebaseRepository {
             }
             return@removeIf flag
         }
-        events.removeIf {
+        eventsList.removeIf {
             it.players?.size == it.playersCount
         }
-        Timber.d("$events")
-        Resource.Success(events)
+        Resource.Success(eventsList)
     }
 
     //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км,
     suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng,radius: Int) = safeCall {
-        val events = events.get().await().toObjects(Event::class.java)
-        Timber.d("load all events by $id")
-        Timber.d("$events")
-        events.removeIf {
+        val eventsList = events.get().await().toObjects(Event::class.java)
+        eventsList.removeIf {
             var flag = false
             it.players?.forEach { elem ->
                 if (elem.userId.equals(id)) {
@@ -207,10 +189,10 @@ class FirebaseRepository {
             }
             return@removeIf flag
         }
-        events.removeIf {
+        eventsList.removeIf {
             it.players?.size == it.playersCount
         }
-        events.removeIf {
+        eventsList.removeIf {
             distance(
                 userLocation.latitude,
                 userLocation.longitude,
@@ -218,8 +200,7 @@ class FirebaseRepository {
                 it.longitude!!,
             ) > radius
         }
-        Timber.d("$events")
-        Resource.Success(events)
+        Resource.Success(eventsList)
     }
 
     //Возвращает Расстояние между двумя точками в метрах
@@ -516,7 +497,7 @@ class FirebaseRepository {
 
     //Перемещение мероприятий, которые начались в другой список
     suspend fun moveEventsToBeginByUserID(id: String) {
-        val eventsList = getAllEventsByUserId(id).data
+        val eventsList = getAllEvents().data
 
         eventsList!!.forEach { event ->
             if (event.eventDateTime!!.time < Calendar.getInstance().timeInMillis) {
@@ -604,6 +585,11 @@ class FirebaseRepository {
                     }
                 }
             }
+            beginEvents.document(beginEventId).delete().await()
+            Resource.Success<Unit>()
+        }
+    suspend fun deleteBeginEvent(beginEventId: String, userId: String) =
+        safeCall {
             beginEvents.document(beginEventId).delete().await()
             Resource.Success<Unit>()
         }

@@ -138,7 +138,11 @@ class BeginEventMoreFragment : Fragment(R.layout.fragment_begin_event_more) {
             findNavController().navigate(R.id.action_beginEventMoreFragment_to_beginEventPlayersFragment,bundle)
         }
         end_event_button.setOnClickListener {
-            beginEventMoreViewModel.addPlayersInVotingsAndDeleteBeginEvent(event.id!!, FirebaseAuth.getInstance().uid!!)
+            if(event.category == "Другое"){
+                beginEventMoreViewModel.deleteBeginEvent(event.id!!, FirebaseAuth.getInstance().uid!!)
+            } else{
+                beginEventMoreViewModel.addPlayersInVotingsAndDeleteBeginEvent(event.id!!, FirebaseAuth.getInstance().uid!!)
+            }
         }
     }
 

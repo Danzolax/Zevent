@@ -37,8 +37,16 @@ class ProfileViewModel @ViewModelInject constructor(private val firebaseReposito
         val response = firebaseRepository.updateUser(name,telephoneNumber,age,prefers,aboutMe)
         isEditProfile.postValue(response)
     }
+    fun resetFlags(){
+        isEditProfile.postValue(null)
+        isSuccessUploadImage.postValue(null)
+    }
 
     fun updateImageOfCurrentUser(uri: Uri) = viewModelScope.launch {
+        if (isSuccessUploadImage.value is Resource.Loading){
+            return@launch
+        }
+        isSuccessUploadImage.postValue(Resource.Loading())
         val response = firebaseRepository.updateImageOfCurrentUser(uri)
         isSuccessUploadImage.postValue(response)
 

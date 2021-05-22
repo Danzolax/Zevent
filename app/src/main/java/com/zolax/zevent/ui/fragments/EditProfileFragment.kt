@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -16,12 +17,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.RequestManager
 import com.zolax.zevent.R
 import com.zolax.zevent.ui.viewmodels.ProfileViewModel
 import com.zolax.zevent.util.Constants.PICK_IMAGE_REQUEST
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_edit_profile.*
 import kotlinx.android.synthetic.main.fragment_edit_profile.aboutYourSelf
 import kotlinx.android.synthetic.main.fragment_edit_profile.age
@@ -29,6 +30,7 @@ import kotlinx.android.synthetic.main.fragment_edit_profile.name
 import kotlinx.android.synthetic.main.fragment_edit_profile.prefers
 import kotlinx.android.synthetic.main.fragment_edit_profile.profileAvatar
 import kotlinx.android.synthetic.main.fragment_edit_profile.telephoneNumber
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -36,6 +38,8 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
     val profileViewModel: ProfileViewModel by activityViewModels()
     var filePath: Uri? = null
+    @Inject
+    lateinit var glide: RequestManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -86,23 +90,25 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         profileViewModel.isSuccessUploadImage.observe(viewLifecycleOwner,{result->
             when(result){
                 is Resource.Success ->{
-                    Toast.makeText(context,"Фотка робит", Toast.LENGTH_SHORT).show()
+
                 }
                 is Resource.Error ->{
-                    Toast.makeText(context,"Фотка не робит", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,"Фото не загружено", Toast.LENGTH_SHORT).show()
+
                 }
+
             }
         })
+
 
     }
 
     private fun initButtons() {
         profileAvatar.setOnClickListener {
-            val intent = Intent()
-            intent.type = "image/*"
-            intent.action = Intent.ACTION_PICK
+            val intent = Intent(Intent.ACTION_PICK , MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+            intent.action = Intent.ACTION_GET_CONTENT
             startActivityForResult(
-                Intent.createChooser(intent, "Выберите изображение"),
+                intent,
                 PICK_IMAGE_REQUEST
             )
         }
@@ -149,8 +155,6 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
                 if(filePath != null){
                     profileViewModel.updateImageOfCurrentUser(filePath!!)
                 }
-                profileViewModel.getCurrentUser()
-                profileViewModel.downloadCurrentUserImage()
                 true
             }
             else -> {

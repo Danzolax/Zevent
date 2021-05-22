@@ -7,24 +7,57 @@
     android:background="@color/main_white_color"
     android:gravity="center"
     android:orientation="vertical">
-
-    <Spinner
-        android:id="@+id/category_filter"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/oxygen"
-        android:textColor="@color/main_text_color"
-        android:textSize="22sp" />
+        android:gravity="center"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/oxygen"
+            android:text="Категории: "
+            android:textColor="@color/main_text_color"
+            android:textSize="16sp" />
+        <Spinner
+            android:id="@+id/category_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/oxygen"
+            android:textColor="@color/main_text_color"
+            android:textSize="22sp" />
+    </LinearLayout>
 
-    <Spinner
-        android:id="@+id/date_filter"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:layout_marginTop="8dp"
-        android:fontFamily="@font/oxygen"
-        android:textColor="@color/main_text_color"
-        android:textSize="22sp" />
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/oxygen"
+            android:text="Дата проведения: "
+            android:textColor="@color/main_text_color"
+            android:textSize="16sp" />
+        <Spinner
+            android:id="@+id/date_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/oxygen"
+            android:textColor="@color/main_text_color"
+            android:textSize="22sp" />/>
+
+
+    </LinearLayout>
+
+
+
+
+
 
     <LinearLayout
         android:layout_width="match_parent"

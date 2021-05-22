@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.RequestManager
 import com.zolax.zevent.R
@@ -58,6 +59,21 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 }
                 is Resource.Error ->{
                     Toast.makeText(requireContext(),"Ошибка загрузки профиля", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+        profileViewModel.isSuccessUploadImage.observe(viewLifecycleOwner,{result->
+            when(result){
+                is Resource.Success ->{
+                    profileViewModel.downloadCurrentUserImage()
+                    profileViewModel.resetFlags()
+                }
+            }
+        })
+        profileViewModel.isEditProfile.observe(viewLifecycleOwner,{result->
+            when(result){
+                is Resource.Success ->{
+                    profileViewModel.resetFlags()
                 }
             }
         })
