@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 class AddEventViewModel @ViewModelInject constructor(
     val firebaseRepository: FirebaseRepository
 ) : ViewModel() {
-    val isSuccessCreateEvent = MutableLiveData<Resource<Unit>>()
+    val isSuccessCreateEvent = MutableLiveData<Resource<Event>>()
 
     fun addEvent(event: Event) = viewModelScope.launch {
         val response = firebaseRepository.addEvent(event)

@@ -43,6 +43,9 @@
         <action
             android:id="@+id/action_mapFragment_to_subscribeOnEventFragment"
             app:destination="@id/subscribeOnEventFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_myEventMoreFragment"
+            app:destination="@id/myEventMoreFragment" />
     </fragment>
     <fragment
         android:id="@+id/profileFragment"

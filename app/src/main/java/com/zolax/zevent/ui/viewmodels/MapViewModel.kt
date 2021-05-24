@@ -1,7 +1,5 @@
 package com.zolax.zevent.ui.viewmodels
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,11 +17,16 @@ class MapViewModel @ViewModelInject constructor(
 ) : ViewModel() {
     val eventsData = MutableLiveData<Resource<List<Event>>>()
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    fun getAllEventsWithRadius(userLocation: LatLng,radius: Int) = viewModelScope.launch{
+        val response = firebaseRepository.getAllEventsWithRadius(userLocation, radius)
+        eventsData.postValue(response)
+    }
+
     fun getAllEventsReverseByUserId(id: String) = viewModelScope.launch {
         val response = firebaseRepository.getAllEventsReverseByUserId(id)
         eventsData.postValue(response)
     }
+
 
     fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng,radius: Int) =
         viewModelScope.launch {
@@ -32,8 +35,8 @@ class MapViewModel @ViewModelInject constructor(
             eventsData.postValue(response)
         }
 
-    fun getFilteredList(
-        userId: String,
+
+    fun getFilteredEvents(
         location: LatLng,
         category: String,
         date: String,
@@ -42,8 +45,7 @@ class MapViewModel @ViewModelInject constructor(
         allPlayersCount: Int?,
         radius: Int
     ) = viewModelScope.launch {
-        val response = firebaseRepository.getFilteredList(
-            userId,
+        val response = firebaseRepository.getFilteredEvents(
             location,
             category,
             date,
@@ -55,6 +57,7 @@ class MapViewModel @ViewModelInject constructor(
         Timber.d("${response.data}")
         eventsData.postValue(response)
     }
+
 
 
     fun moveEventsToBeginByUserID(id: String) = viewModelScope.launch {

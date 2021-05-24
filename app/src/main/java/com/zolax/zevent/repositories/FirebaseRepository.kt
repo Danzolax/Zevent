@@ -1,9 +1,6 @@
 package com.zolax.zevent.repositories
 
-import android.content.SharedPreferences
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -138,7 +135,7 @@ class FirebaseRepository {
     suspend fun addEvent(event: Event) =
         safeCall {
             events.add(event).await()
-            Resource.Success<Unit>()
+            Resource.Success(event)
         }
 
     suspend fun getAllEvents() = safeCall {
@@ -177,7 +174,11 @@ class FirebaseRepository {
     }
 
     //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км,
-    suspend fun getAllEventsReverseByUserIdWithRadius(id: String, userLocation: LatLng,radius: Int) = safeCall {
+    suspend fun getAllEventsReverseByUserIdWithRadius(
+        id: String,
+        userLocation: LatLng,
+        radius: Int
+    ) = safeCall {
         val eventsList = events.get().await().toObjects(Event::class.java)
         eventsList.removeIf {
             var flag = false
@@ -189,6 +190,22 @@ class FirebaseRepository {
             }
             return@removeIf flag
         }
+        eventsList.removeIf {
+            it.players?.size == it.playersCount
+        }
+        eventsList.removeIf {
+            distance(
+                userLocation.latitude,
+                userLocation.longitude,
+                it.latitude!!,
+                it.longitude!!,
+            ) > radius
+        }
+        Resource.Success(eventsList)
+    }
+
+    suspend fun getAllEventsWithRadius(userLocation: LatLng, radius: Int) = safeCall {
+        val eventsList = events.get().await().toObjects(Event::class.java)
         eventsList.removeIf {
             it.players?.size == it.playersCount
         }
@@ -305,9 +322,29 @@ class FirebaseRepository {
                 }
             }
         }
+        val userEvents = getAllEventsByUserId(player.userId!!).data as MutableList
+        Timber.d("User Events: ${userEvents}")
+        val currentEvent = getEventById(id).data!!
+        Timber.d("Current Event: ${currentEvent}")
+
+        val findEvent = userEvents.find {
+            val findEventDate = Calendar.getInstance()
+            findEventDate.time = it.eventDateTime!!
+
+            val currEventDate = Calendar.getInstance()
+            currEventDate.time = currentEvent.eventDateTime!!
+
+            return@find (findEventDate.get(Calendar.DAY_OF_YEAR) == currEventDate.get(Calendar.DAY_OF_YEAR)) and
+                    (findEventDate.get(Calendar.HOUR_OF_DAY) == currEventDate.get(Calendar.HOUR_OF_DAY))
+        }
+        Timber.d("Find Event: ${findEvent}")
+
+        if (findEvent != null) {
+            return@safeCall Resource.Error(msg = "Слишком много мероприятий в одно время")
+        }
         (event.players as ArrayList).add(player)
         events.document(id).set(event).await()
-        Resource.Success<Unit>()
+        Resource.Success(event)
     }
 
     suspend fun unsubscribeEventById(id: String, player: Player) = safeCall {
@@ -369,7 +406,7 @@ class FirebaseRepository {
     }
 
     //Возвращает список мероприятий всех пользователей кроме текушего в радиусе 5 км, в соответствии с фильтрами
-    suspend fun getFilteredList(
+    suspend fun getFilteredListReverseByUserId(
         id: String,
         location: LatLng,
         category: String,
@@ -379,7 +416,69 @@ class FirebaseRepository {
         allPlayersCount: Int?,
         searchRadius: Int
     ) = safeCall {
-        val response = getAllEventsReverseByUserIdWithRadius(id, location,searchRadius)
+        val response = getAllEventsReverseByUserIdWithRadius(id, location, searchRadius)
+        if (response is Resource.Error) {
+            return@safeCall response
+        }
+        var eventList = response.data!!
+        if (category != "Не фильтровать") {
+            eventList = eventList.filter {
+                it.category == category
+            }
+        }
+        if (date != "Не фильтровать") {
+            val calendar = Calendar.getInstance()
+            when (date) {
+                "Сегодня" -> {
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)) and
+                                (eventCalendar.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH))
+                    }
+                }
+                "На этой неделе" -> {
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH)) and
+                                (eventCalendar.get(Calendar.WEEK_OF_MONTH) == calendar.get(Calendar.WEEK_OF_MONTH))
+                    }
+                }
+                "В этом месяце" -> {
+                    eventList = eventList.filter {
+                        val eventCalendar = Calendar.getInstance()
+                        eventCalendar.time = it.eventDateTime!!
+                        (eventCalendar.get(Calendar.YEAR) == calendar.get(Calendar.YEAR)) and
+                                (eventCalendar.get(Calendar.MONTH) == calendar.get(Calendar.MONTH))
+                    }
+                }
+            }
+        }
+        if (isNeedEquip) {
+            eventList = eventList.filter { it.isNeedEquip }
+        }
+        currentPlayersCount?.let {
+            eventList = eventList.filter { event -> event.players!!.size == currentPlayersCount }
+        }
+        allPlayersCount?.let {
+            eventList = eventList.filter { event -> event.playersCount == allPlayersCount }
+        }
+        Resource.Success(eventList)
+    }
+
+    suspend fun getFilteredEvents(
+        location: LatLng,
+        category: String,
+        date: String,
+        isNeedEquip: Boolean,
+        currentPlayersCount: Int?,
+        allPlayersCount: Int?,
+        searchRadius: Int
+    ) = safeCall {
+        val response = getAllEventsWithRadius(location, searchRadius)
         if (response is Resource.Error) {
             return@safeCall response
         }
@@ -588,6 +687,7 @@ class FirebaseRepository {
             beginEvents.document(beginEventId).delete().await()
             Resource.Success<Unit>()
         }
+
     suspend fun deleteBeginEvent(beginEventId: String, userId: String) =
         safeCall {
             beginEvents.document(beginEventId).delete().await()

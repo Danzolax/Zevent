@@ -7,6 +7,7 @@ import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.provider.CalendarContract
 import android.provider.Settings
 import android.text.format.DateUtils
 import android.view.Menu
@@ -17,7 +18,6 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.material.snackbar.Snackbar
@@ -30,17 +30,19 @@ import com.zolax.zevent.ui.viewmodels.SubscribeOnEventViewModel
 import com.zolax.zevent.util.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_subscribe_on_event.*
+import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event) {
     lateinit var event: Event
-    val subscribeOnEventViewModel : SubscribeOnEventViewModel by viewModels()
+    val subscribeOnEventViewModel: SubscribeOnEventViewModel by viewModels()
+    private val REQUEST_CODE = 213
 
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    lateinit var manager : LocationManager
+    lateinit var manager: LocationManager
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         manager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -52,17 +54,53 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
     }
 
     private fun subscribeObservers() {
-        subscribeOnEventViewModel.event.observe(viewLifecycleOwner,{result ->
-            when(result){
-                is Resource.Success ->{
-                    Snackbar.make(requireView(), "Вы подписаны на мероприятие", Snackbar.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
-                }
-                is Resource.Error ->{
-                    if (result.msg == "Роль занята!"){
-                        Snackbar.make(requireView(), "Роль занята, выберите другую", Snackbar.LENGTH_SHORT).show()
+        subscribeOnEventViewModel.event.observe(viewLifecycleOwner, { result ->
+            when (result) {
+                is Resource.Success -> {
+                    val intent = Intent(Intent.ACTION_INSERT)
+                    intent.data = CalendarContract.Events.CONTENT_URI
+                    intent.putExtra(CalendarContract.Events.TITLE, result.data?.title ?: "Title")
+                    intent.putExtra(
+                        CalendarContract.Events.EVENT_LOCATION,
+                        "${result.data?.latitude} + ${result.data?.longitude}"
+                    )
+                    intent.putExtra(
+                        CalendarContract.EXTRA_EVENT_BEGIN_TIME,
+                        result.data!!.eventDateTime!!.time
+                    )
+                    if (intent.resolveActivity(requireActivity().packageManager) != null) {
+                        startActivityForResult(intent,REQUEST_CODE)
                     } else{
-                        Snackbar.make(requireView(), "Ошибка подписки!", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(
+                            requireView(),
+                            "Вы подписаны на мероприятие",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                        findNavController().popBackStack()
+                    }
+
+
+                }
+                is Resource.Error -> {
+                    when (result.msg) {
+                        "Роль занята!" -> {
+                            Snackbar.make(
+                                requireView(),
+                                "Роль занята, выберите другую",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
+                        "Слишком много мероприятий в одно время" -> {
+                            Snackbar.make(
+                                requireView(),
+                                "ВЫ не можете подписаться на мероприятие, если в это же время у вас запланировано другое",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
+                        else -> {
+                            Snackbar.make(requireView(), "Ошибка подписки!", Snackbar.LENGTH_SHORT)
+                                .show()
+                        }
                     }
                 }
             }
@@ -82,21 +120,24 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
         players_count.setOnClickListener {
             val bundle = Bundle()
             val gson = Gson()
-            bundle.putString("event",gson.toJson(event))
-            findNavController().navigate(R.id.action_subscribeOnEventFragment_to_eventPlayersFragment, bundle)
+            bundle.putString("event", gson.toJson(event))
+            findNavController().navigate(
+                R.id.action_subscribeOnEventFragment_to_eventPlayersFragment,
+                bundle
+            )
         }
     }
 
     private fun initUI() {
         val gson = Gson()
-        event =  gson.fromJson(requireArguments().getString("event"),Event::class.java)
+        event = gson.fromJson(requireArguments().getString("event"), Event::class.java)
         title.text = event.title
         type.text = event.category
         players_count.text = "${event.players?.size}/${event.playersCount}"
         val calendar = Calendar.getInstance()
         calendar.time = event.eventDateTime
         setDateTimeInTextView(calendar)
-        if (event.isNeedEquip){
+        if (event.isNeedEquip) {
             equip_container.visibility = View.VISIBLE
             equip.text = event.needEquip
         }
@@ -148,6 +189,8 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
         }
     }
 
+
+
     private fun buildAlertMessageNoLocationService() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         builder.setCancelable(false)
@@ -178,12 +221,19 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_subscribe -> {
-                if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                        if (it != null){
-                            subscribeOnEventViewModel.subscribeEventById(event.id!!,createPlayer(it)!!)
-                        } else{
-                            Snackbar.make(requireView(), "Нажмите кнопку через пару секунд", Snackbar.LENGTH_SHORT)
+                        if (it != null) {
+                            subscribeOnEventViewModel.subscribeEventById(
+                                event.id!!,
+                                createPlayer(it)!!
+                            )
+                        } else {
+                            Snackbar.make(
+                                requireView(),
+                                "Нажмите кнопку через пару секунд",
+                                Snackbar.LENGTH_SHORT
+                            )
                         }
                     }
                 } else {
@@ -199,9 +249,9 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
         }
     }
 
-    private fun createPlayer(location:Location): Player? {
+    private fun createPlayer(location: Location): Player? {
         return FirebaseAuth.getInstance().currentUser?.uid?.let {
-            if (event.category.equals("Другое")){
+            if (event.category.equals("Другое")) {
                 Player(
                     it,
                     "Нет",
@@ -209,7 +259,7 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
                     location.latitude,
                     location.longitude
                 )
-            } else{
+            } else {
                 Player(
                     it,
                     role.selectedItem as String,
@@ -219,5 +269,17 @@ class SubscribeOnEventFragment() : Fragment(R.layout.fragment_subscribe_on_event
                 )
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CODE){
+            Snackbar.make(
+                requireView(),
+                "Вы подписаны на мероприятие",
+                Snackbar.LENGTH_SHORT
+            ).show()
+            findNavController().popBackStack()
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }

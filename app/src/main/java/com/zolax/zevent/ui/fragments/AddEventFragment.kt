@@ -1,4 +1,5 @@
 package com.zolax.zevent.ui.fragments
+
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -8,6 +9,7 @@ import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.provider.CalendarContract
 import android.provider.Settings
 import android.text.format.DateUtils
 import android.view.Menu
@@ -22,7 +24,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.zolax.zevent.R
@@ -35,7 +36,6 @@ import kotlinx.android.synthetic.main.fragment_add_event.*
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 
 @AndroidEntryPoint
 class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
@@ -44,7 +44,7 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
 
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    lateinit var manager : LocationManager
+    lateinit var manager: LocationManager
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,22 +54,30 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
         initButtons()
         setHasOptionsMenu(true)
         initSpinners()
-        subsribeObservers()
+        subscribeObservers()
     }
 
-    private fun createEvent( location: Location): Event? {
-        if ((players_count.text.toString() == "") or ( createPlayer(location) == null)) {
+    private fun createEvent(location: Location): Event? {
+        if ((players_count.text.toString() == "") or (createPlayer(location) == null)) {
             Snackbar.make(requireView(), "Введите количество игроков!", Snackbar.LENGTH_SHORT)
                 .show()
             return null
         }
-        if (needDatetime.timeInMillis < Calendar.getInstance().timeInMillis){
-            Snackbar.make(requireView(), "Время начала мероприятия должно быть больше, чем текущее!", Snackbar.LENGTH_SHORT)
+        if (needDatetime.timeInMillis < Calendar.getInstance().timeInMillis) {
+            Snackbar.make(
+                requireView(),
+                "Время начала мероприятия должно быть больше, чем текущее!",
+                Snackbar.LENGTH_SHORT
+            )
                 .show()
             return null
         }
-        if ((title.text.toString() == "") or (title.text.toString().length > 30)){
-            Snackbar.make(requireView(), "Введите название мероприятия не более 30 символов!", Snackbar.LENGTH_SHORT)
+        if ((title.text.toString() == "") or (title.text.toString().length > 30)) {
+            Snackbar.make(
+                requireView(),
+                "Введите название мероприятия не более 30 символов!",
+                Snackbar.LENGTH_SHORT
+            )
                 .show()
             return null
         }
@@ -100,10 +108,30 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
         }
     }
 
-    private fun subsribeObservers() {
+    private fun subscribeObservers() {
         addEventViewModel.isSuccessCreateEvent.observe(viewLifecycleOwner, { result ->
             when (result) {
                 is Resource.Success -> {
+                    val intent = Intent(Intent.ACTION_INSERT)
+                    intent.data = CalendarContract.Events.CONTENT_URI
+                    intent.putExtra(CalendarContract.Events.TITLE, result.data?.title ?: "Title")
+                    intent.putExtra(
+                        CalendarContract.Events.EVENT_LOCATION,
+                        "${result.data?.latitude} + ${result.data?.longitude}"
+                    )
+                    intent.putExtra(
+                        CalendarContract.EXTRA_EVENT_BEGIN_TIME,
+                        result.data!!.eventDateTime!!.time
+                    )
+                    if (intent.resolveActivity(requireActivity().packageManager) != null) {
+                        startActivity(intent)
+                    } else {
+                        Snackbar.make(
+                            requireView(),
+                            "Календарь не поддерживается",
+                            Snackbar.LENGTH_SHORT
+                        ).show()
+                    }
                     Snackbar.make(requireView(), "Мероприятие создано", Snackbar.LENGTH_SHORT)
                         .show()
                     findNavController().popBackStack()
@@ -177,6 +205,7 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                     }
                 }
             }
+
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
@@ -257,14 +286,18 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
                 true
             }
             R.id.action_confirm -> {
-                if ( manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                        if (it != null){
-                            createEvent(it)?.let {event ->
+                        if (it != null) {
+                            createEvent(it)?.let { event ->
                                 addEventViewModel.addEvent(event)
                             }
-                        } else{
-                            Snackbar.make(requireView(), "Нажмите кнопку через пару секунд", Snackbar.LENGTH_SHORT)
+                        } else {
+                            Snackbar.make(
+                                requireView(),
+                                "Нажмите кнопку через пару секунд",
+                                Snackbar.LENGTH_SHORT
+                            )
                         }
                     }
                 } else {
@@ -289,7 +322,6 @@ class AddEventFragment() : Fragment(R.layout.fragment_add_event) {
         val alert: AlertDialog = builder.create()
         alert.show()
     }
-
 
 
 }

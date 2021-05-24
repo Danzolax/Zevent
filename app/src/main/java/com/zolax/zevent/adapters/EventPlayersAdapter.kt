@@ -60,7 +60,7 @@ class EventPlayersAdapter(
         holder.itemView.apply {
             //TODO Добавить инъекцию
             Glide.with(this).load(player.third).into(profileAvatar)
-            name.text = player.first.name
+            name.text = if (position == 0) "Администратор: ${player.first.name}" else player.first.name
             if(!isShowTelephone){
                 telephone_number.visibility = View.GONE
             } else{

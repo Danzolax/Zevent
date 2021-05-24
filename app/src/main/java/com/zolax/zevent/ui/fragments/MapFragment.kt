@@ -73,8 +73,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                 it?.let {
-                    mapViewModel.getAllEventsReverseByUserIdWithRadius(
-                        FirebaseAuth.getInstance().uid!!,
+                    mapViewModel.getAllEventsWithRadius(
                         LatLng(it.latitude, it.longitude),
                         mySharedPreferences.getInt(
                             Constants.APP_PREFERENCES_EVENT_SEARCH_RADIUS,
@@ -86,6 +85,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         } else {
             buildAlertMessageNoLocationService()
         }
+
         mapViewModel.moveEventsToBeginByUserID(FirebaseAuth.getInstance().uid!!)
     }
 
@@ -93,10 +93,14 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         mapViewModel.eventsData.observe(viewLifecycleOwner, { result ->
             when (result) {
                 is Resource.Success -> {
-                    Timber.d("${result.data}")
                     clearMap()
-                    result.data?.forEach { elem ->
-                        setMarkerOnMap(elem)
+                    result.data?.forEach { event ->
+                        if (event.players!!.find { it.userId == FirebaseAuth.getInstance().uid!! } != null){
+                            setMarkerOnMap(event,BitmapDescriptorFactory.HUE_RED)
+                        } else{
+                            setMarkerOnMap(event,BitmapDescriptorFactory.HUE_BLUE)
+
+                        }
                     }
                 }
                 is Resource.Error -> {
@@ -127,12 +131,12 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
         }
     }
 
-    private fun setMarkerOnMap(event: Event) {
+    private fun setMarkerOnMap(event: Event,color: Float) {
 
         val marker: Marker? = map?.addMarker(
             MarkerOptions()
                 .position(LatLng(event.latitude!!, event.longitude!!))
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                .icon(BitmapDescriptorFactory.defaultMarker(color))
                 .title(event.title)
         )
         marker?.let {
@@ -143,15 +147,24 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
 
     override fun onMarkerClick(p0: Marker?): Boolean {
         Timber.d("marker clicked!")
-        p0?.let {
-            if (it.tag is Event) {
+        p0?.let { marker ->
+            if (marker.tag is Event) {
+                val buffEvent = marker.tag as Event
                 val bundle = Bundle()
                 val gson = Gson()
-                bundle.putString("event", gson.toJson(it.tag))
-                findNavController().navigate(
-                    R.id.action_mapFragment_to_subscribeOnEventFragment,
-                    bundle
-                )
+                if(buffEvent.players!!.find { it.userId == FirebaseAuth.getInstance().uid!! } != null){
+                    bundle.putString("eventId", buffEvent.id)
+                    findNavController().navigate(
+                        R.id.action_mapFragment_to_myEventMoreFragment,
+                        bundle
+                    )
+                } else{
+                    bundle.putString("event", gson.toJson(marker.tag))
+                    findNavController().navigate(
+                        R.id.action_mapFragment_to_subscribeOnEventFragment,
+                        bundle
+                    )
+                }
                 return true
             }
         }
@@ -226,8 +239,7 @@ class MapFragment : Fragment(R.layout.fragment_map), EasyPermissions.PermissionC
                                 ).show()
                             }
                         }
-                        mapViewModel.getFilteredList(
-                            FirebaseAuth.getInstance().uid!!,
+                        mapViewModel.getFilteredEvents(
                             LatLng(it.latitude, it.longitude),
                             view.category_filter.selectedItem as String,
                             view.date_filter.selectedItem as String,
